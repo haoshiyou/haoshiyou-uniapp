@@ -1,8 +1,7 @@
 import {HsyBot} from "./hsy-bot";
 import {PuppetPadpro} from "wechaty-puppet-padpro";
 import {Wechaty} from "wechaty";
-import {Db} from "mongodb";
-const MongoClient = require('mongodb').MongoClient;
+import {Db, MongoClient} from "mongodb";
 
 require(`dotenv`).config();
 
@@ -15,8 +14,8 @@ let main = async function() {
     puppet,
   });
 
-  const mongodb:Db = await MongoClient.connect(process.env.MONGODB_URI, {useNewUrlParser: true});
-
+  let client:MongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+  const mongodb:Db = client.db(process.env.MONGODB_URI.split('/')[-1]);
   let hsyBot = new HsyBot(wechaty, mongodb);
   await hsyBot.start();
 

@@ -1,4 +1,4 @@
-import {Contact, Message, Room, Wechaty} from 'wechaty';
+import {Contact, Friendship, Message, Room, Wechaty} from 'wechaty';
 import {ContactSelf} from "wechaty/dist/src/user";
 import {ChatRoute, ChatRouter} from "./chat-router";
 import {sify} from 'chinese-conv';
@@ -31,6 +31,17 @@ const hsyRoomsIdToNameMap = {
   "106702284@chatroom": "南湾东",   // : "【好室友】南湾东 MPTS-SJ租房群",
   "314160598@chatroom": "中半岛",   // : "【好室友】中半岛租房群",
 };
+
+const greetingMsg = `请问你要加哪个区域的群？
+  【南湾西】包含 Palo Alto，Stanford, Mountain View，Sunnyvale，Cupertino 一带
+  【南湾东】包含 San Jose，Santa Clara，Milpitas一带
+  【东湾】湾东边 Milpitas以北，包括Fremont，Hayward，Berkeley等
+  【中半岛】Redwood以北，San Francisco以南
+  【三番】旧金山 (San Francisco) 城里，含South San Francisco
+  【西雅图】我们新开设了西雅图好室友群，服务大西雅图地区
+  【短租】如果你希望在旧金山湾区任意地方内进行3个月以内短租（出租和求租），请加短租群
+请回复要加哪个群，例如： 南湾西
+`;
 
 const HARDCODED_ADMINS = [
   // from 大军团
@@ -170,18 +181,7 @@ export class HsyBot {
     },
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
-
-          await message.from().say(`
-          请问你要加哪个区域的群？
-            【南湾西】包含 Palo Alto，Stanford, Mountain View，Sunnyvale，Cupertino 一带
-            【南湾东】包含 San Jose，Santa Clara，Milpitas一带
-            【东湾】湾东边 Milpitas以北，包括Fremont，Hayward，Berkeley等
-            【中半岛】Redwood以北，San Francisco以南
-            【三番】旧金山 (San Francisco) 城里，含South San Francisco
-            【西雅图】我们新开设了西雅图好室友群，服务大西雅图地区
-            【短租】如果你希望在旧金山湾区任意地方内进行3个月以内短租（出租和求租），请加短租群
-          请回复要加哪个群，例如： 南湾西
-          `);
+          await message.from().say(greetingMsg);
         });
     }));
   }
@@ -207,6 +207,19 @@ export class HsyBot {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
         logger.debug(`handled message ${message} with routeName ${routeName}`);
+      })
+      .on('friendship', async (friendship: Friendship) => {
+        logger.debug(`Received friendship ${friendship}`);
+        if (await this.isBlacklisted(friendship.contact().id)) {
+          logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
+        }
+        else {
+          await friendship.accept();
+          logger.debug(`Accepted friendship ${friendship}`);
+          await this.limiter.schedule(async () => {
+            await friendship.contact().say(greetingMsg);
+          });
+        }
       })
       .on('room-join', (room: Room, inviteeList: Contact[], inviter: Contact) => {
         // TODO record who invites who and shows the message of bonus

@@ -38,6 +38,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [ ] Make Room Announcement
   - [X] (maybe)Downsize
   - [ ] Record invitation
+  - [ ] Accept Friendship
 
 - Intention Parsing
   - [X] SeekInstruction

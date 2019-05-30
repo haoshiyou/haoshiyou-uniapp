@@ -62,6 +62,7 @@ var hsyRoomsIdToNameMap = {
     "106702284@chatroom": "南湾东",
     "314160598@chatroom": "中半岛",
 };
+var greetingMsg = "\u8BF7\u95EE\u4F60\u8981\u52A0\u54EA\u4E2A\u533A\u57DF\u7684\u7FA4\uFF1F\n  \u3010\u5357\u6E7E\u897F\u3011\u5305\u542B Palo Alto\uFF0CStanford, Mountain View\uFF0CSunnyvale\uFF0CCupertino \u4E00\u5E26\n  \u3010\u5357\u6E7E\u4E1C\u3011\u5305\u542B San Jose\uFF0CSanta Clara\uFF0CMilpitas\u4E00\u5E26\n  \u3010\u4E1C\u6E7E\u3011\u6E7E\u4E1C\u8FB9 Milpitas\u4EE5\u5317\uFF0C\u5305\u62ECFremont\uFF0CHayward\uFF0CBerkeley\u7B49\n  \u3010\u4E2D\u534A\u5C9B\u3011Redwood\u4EE5\u5317\uFF0CSan Francisco\u4EE5\u5357\n  \u3010\u4E09\u756A\u3011\u65E7\u91D1\u5C71 (San Francisco) \u57CE\u91CC\uFF0C\u542BSouth San Francisco\n  \u3010\u897F\u96C5\u56FE\u3011\u6211\u4EEC\u65B0\u5F00\u8BBE\u4E86\u897F\u96C5\u56FE\u597D\u5BA4\u53CB\u7FA4\uFF0C\u670D\u52A1\u5927\u897F\u96C5\u56FE\u5730\u533A\n  \u3010\u77ED\u79DF\u3011\u5982\u679C\u4F60\u5E0C\u671B\u5728\u65E7\u91D1\u5C71\u6E7E\u533A\u4EFB\u610F\u5730\u65B9\u5185\u8FDB\u884C3\u4E2A\u6708\u4EE5\u5185\u77ED\u79DF\uFF08\u51FA\u79DF\u548C\u6C42\u79DF\uFF09\uFF0C\u8BF7\u52A0\u77ED\u79DF\u7FA4\n\u8BF7\u56DE\u590D\u8981\u52A0\u54EA\u4E2A\u7FA4\uFF0C\u4F8B\u5982\uFF1A \u5357\u6E7E\u897F\n";
 var HARDCODED_ADMINS = [
     // from 大军团
     "haoshiyou-bot",
@@ -271,7 +272,7 @@ var HsyBot = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, message.from().say("\n          \u8BF7\u95EE\u4F60\u8981\u52A0\u54EA\u4E2A\u533A\u57DF\u7684\u7FA4\uFF1F\n            \u3010\u5357\u6E7E\u897F\u3011\u5305\u542B Palo Alto\uFF0CStanford, Mountain View\uFF0CSunnyvale\uFF0CCupertino \u4E00\u5E26\n            \u3010\u5357\u6E7E\u4E1C\u3011\u5305\u542B San Jose\uFF0CSanta Clara\uFF0CMilpitas\u4E00\u5E26\n            \u3010\u4E1C\u6E7E\u3011\u6E7E\u4E1C\u8FB9 Milpitas\u4EE5\u5317\uFF0C\u5305\u62ECFremont\uFF0CHayward\uFF0CBerkeley\u7B49\n            \u3010\u4E2D\u534A\u5C9B\u3011Redwood\u4EE5\u5317\uFF0CSan Francisco\u4EE5\u5357\n            \u3010\u4E09\u756A\u3011\u65E7\u91D1\u5C71 (San Francisco) \u57CE\u91CC\uFF0C\u542BSouth San Francisco\n            \u3010\u897F\u96C5\u56FE\u3011\u6211\u4EEC\u65B0\u5F00\u8BBE\u4E86\u897F\u96C5\u56FE\u597D\u5BA4\u53CB\u7FA4\uFF0C\u670D\u52A1\u5927\u897F\u96C5\u56FE\u5730\u533A\n            \u3010\u77ED\u79DF\u3011\u5982\u679C\u4F60\u5E0C\u671B\u5728\u65E7\u91D1\u5C71\u6E7E\u533A\u4EFB\u610F\u5730\u65B9\u5185\u8FDB\u884C3\u4E2A\u6708\u4EE5\u5185\u77ED\u79DF\uFF08\u51FA\u79DF\u548C\u6C42\u79DF\uFF09\uFF0C\u8BF7\u52A0\u77ED\u79DF\u7FA4\n          \u8BF7\u56DE\u590D\u8981\u52A0\u54EA\u4E2A\u7FA4\uFF0C\u4F8B\u5982\uFF1A \u5357\u6E7E\u897F\n          ")];
+                                    case 0: return [4 /*yield*/, message.from().say(greetingMsg)];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];
@@ -319,6 +320,38 @@ var HsyBot = /** @class */ (function () {
                                     routeName = _a.sent();
                                     logger.debug("handled message " + message + " with routeName " + routeName);
                                     return [2 /*return*/];
+                            }
+                        });
+                    }); })
+                        .on('friendship', function (friendship) { return __awaiter(_this, void 0, void 0, function () {
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    logger.debug("Received friendship " + friendship);
+                                    return [4 /*yield*/, this.isBlacklisted(friendship.contact().id)];
+                                case 1:
+                                    if (!_a.sent()) return [3 /*break*/, 2];
+                                    logger.warn("Ignoring friendship from contact " + friendship.contact());
+                                    return [3 /*break*/, 5];
+                                case 2: return [4 /*yield*/, friendship.accept()];
+                                case 3:
+                                    _a.sent();
+                                    logger.debug("Accepted friendship " + friendship);
+                                    return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4 /*yield*/, friendship.contact().say(greetingMsg)];
+                                                    case 1:
+                                                        _a.sent();
+                                                        return [2 /*return*/];
+                                                }
+                                            });
+                                        }); })];
+                                case 4:
+                                    _a.sent();
+                                    _a.label = 5;
+                                case 5: return [2 /*return*/];
                             }
                         });
                     }); })

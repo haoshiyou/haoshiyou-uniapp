@@ -38,11 +38,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hsy_bot_1 = require("./hsy-bot");
 var wechaty_puppet_padpro_1 = require("wechaty-puppet-padpro");
 var wechaty_1 = require("wechaty");
-var MongoClient = require('mongodb').MongoClient;
+var mongodb_1 = require("mongodb");
 require("dotenv").config();
 var main = function () {
     return __awaiter(this, void 0, void 0, function () {
-        var puppet, wechaty, mongodb, hsyBot;
+        var puppet, wechaty, client, mongodb, hsyBot;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -52,9 +52,10 @@ var main = function () {
                     wechaty = new wechaty_1.Wechaty({
                         puppet: puppet,
                     });
-                    return [4 /*yield*/, MongoClient.connect(process.env.MONGODB_URI, { useNewUrlParser: true })];
+                    return [4 /*yield*/, mongodb_1.MongoClient.connect(process.env.MONGODB_URI)];
                 case 1:
-                    mongodb = _a.sent();
+                    client = _a.sent();
+                    mongodb = client.db(process.env.MONGODB_URI.split('/')[-1]);
                     hsyBot = new hsy_bot_1.HsyBot(wechaty, mongodb);
                     return [4 /*yield*/, hsyBot.start()];
                 case 2:

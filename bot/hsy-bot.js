@@ -413,7 +413,7 @@ var HsyBot = /** @class */ (function () {
                                     return [4 /*yield*/, this.chatRouter.process(message)];
                                 case 1:
                                     routeName = _a.sent();
-                                    logger.debug("handled message from(" + message.from().id + ") to(" + (message.to() ? message.to().id || message.room().id : ) + ") " + message + " with routeName " + routeName);
+                                    logger.debug("handled message from(" + message.from().id + ") to(" + (message.to() ? message.to().id : message.room().id) + ") " + message + " with routeName " + routeName);
                                     return [2 /*return*/];
                             }
                         });

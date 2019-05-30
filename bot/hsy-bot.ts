@@ -273,7 +273,7 @@ export class HsyBot {
       .on('message', async (message: Message) => {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
-        logger.debug(`handled message from(${message.from().id}) to(${message.to() ? message.to().id || message.room().id}) ${message} with routeName ${routeName}`);
+        logger.debug(`handled message from(${message.from().id}) to(${message.to() ? message.to().id : message.room().id }) ${message} with routeName ${routeName}`);
       })
       .on('friendship', async (friendship: Friendship) => {
         logger.debug(`Received friendship ${friendship}`);

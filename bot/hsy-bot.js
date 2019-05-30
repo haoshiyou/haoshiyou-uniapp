@@ -62,7 +62,11 @@ var hsyRoomsIdToNameMap = {
     "106702284@chatroom": "南湾东",
     "314160598@chatroom": "中半岛",
 };
-var greetingMsg = "\u8BF7\u95EE\u4F60\u8981\u52A0\u54EA\u4E2A\u533A\u57DF\u7684\u7FA4\uFF1F\n  \u3010\u5357\u6E7E\u897F\u3011\u5305\u542B Palo Alto\uFF0CStanford, Mountain View\uFF0CSunnyvale\uFF0CCupertino \u4E00\u5E26\n  \u3010\u5357\u6E7E\u4E1C\u3011\u5305\u542B San Jose\uFF0CSanta Clara\uFF0CMilpitas\u4E00\u5E26\n  \u3010\u4E1C\u6E7E\u3011\u6E7E\u4E1C\u8FB9 Milpitas\u4EE5\u5317\uFF0C\u5305\u62ECFremont\uFF0CHayward\uFF0CBerkeley\u7B49\n  \u3010\u4E2D\u534A\u5C9B\u3011Redwood\u4EE5\u5317\uFF0CSan Francisco\u4EE5\u5357\n  \u3010\u4E09\u756A\u3011\u65E7\u91D1\u5C71 (San Francisco) \u57CE\u91CC\uFF0C\u542BSouth San Francisco\n  \u3010\u897F\u96C5\u56FE\u3011\u6211\u4EEC\u65B0\u5F00\u8BBE\u4E86\u897F\u96C5\u56FE\u597D\u5BA4\u53CB\u7FA4\uFF0C\u670D\u52A1\u5927\u897F\u96C5\u56FE\u5730\u533A\n  \u3010\u77ED\u79DF\u3011\u5982\u679C\u4F60\u5E0C\u671B\u5728\u65E7\u91D1\u5C71\u6E7E\u533A\u4EFB\u610F\u5730\u65B9\u5185\u8FDB\u884C3\u4E2A\u6708\u4EE5\u5185\u77ED\u79DF\uFF08\u51FA\u79DF\u548C\u6C42\u79DF\uFF09\uFF0C\u8BF7\u52A0\u77ED\u79DF\u7FA4\n\u8BF7\u56DE\u590D\u8981\u52A0\u54EA\u4E2A\u7FA4\uFF0C\u4F8B\u5982\uFF1A \u5357\u6E7E\u897F\n";
+var greetingMsg = "\u8BF7\u95EE\u4F60\u8981\u52A0\u54EA\u4E2A\u533A\u57DF\u7684\u7FA4\uFF1F\n  \u3010\u5357\u6E7E\u897F\u3011\u5305\u542B Palo Alto\uFF0CStanford, Mountain View\uFF0CSunnyvale\uFF0CCupertino \u4E00\u5E26\n  \u3010\u5357\u6E7E\u4E1C\u3011\u5305\u542B San Jose\uFF0CSanta Clara\uFF0CMilpitas\u4E00\u5E26\n  \u3010\u4E1C\u6E7E\u3011\u6E7E\u4E1C\u8FB9 Milpitas\u4EE5\u5317\uFF0C\u5305\u62ECFremont\uFF0CHayward\uFF0CBerkeley\u7B49\n  \u3010\u4E2D\u534A\u5C9B\u3011Redwood\u4EE5\u5317\uFF0CSan Francisco\u4EE5\u5357\n  \u3010\u4E09\u756A\u3011\u65E7\u91D1\u5C71 (San Francisco) \u57CE\u91CC\uFF0C\u542BSouth San Francisco\n  \u3010\u897F\u96C5\u56FE\u3011\u6211\u4EEC\u65B0\u5F00\u8BBE\u4E86\u897F\u96C5\u56FE\u597D\u5BA4\u53CB\u7FA4\uFF0C\u670D\u52A1\u5927\u897F\u96C5\u56FE\u5730\u533A\n  \u3010\u77ED\u79DF\u3011\u5982\u679C\u4F60\u5E0C\u671B\u5728\u65E7\u91D1\u5C71\u6E7E\u533A\u4EFB\u610F\u5730\u65B9\u5185\u8FDB\u884C3\u4E2A\u6708\u4EE5\u5185\u77ED\u79DF\uFF08\u51FA\u79DF\u548C\u6C42\u79DF\uFF09\uFF0C\u8BF7\u52A0\u77ED\u79DF\u7FA4\n\u8BF7\u56DE\u590D\u8981\u52A0\u54EA\u4E2A\u7FA4\uFF0C\u4F8B\u5982\uFF1A \u5357\u6E7E\u897F\n \n\u53E6\u5916 \u56DE\u590D\n  \u3010\u722C\u5C71\u3011\u52A0\u5165\u7FA4\u4E3B\u7684\u9760\u8C31\u722C\u5C71\u7FA4\uFF0C\u4E0D\u5B9A\u671F\u7EC4\u7EC7\u6E7E\u533A\u9644\u8FD1\u7684\u722C\u5C71\u6D3B\u52A8\uFF0C\u8BA4\u8BC6\u65B0\u670B\u53CB\n  \u3010\u4E70\u623F\u3011\u4E86\u89E3\u7845\u8C37\u4E70\u623F\u4FE1\u606F\u3001\u52A0\u5165\u8D2D\u623F\u7FA4\u53C2\u4E0E\u8BA8\u8BBA\uFF0C\u6211\u4EEC\u7684\u793E\u533A\u8001\u53CB\u4E5F\u5C06\u4E3A\u4F60\u63D0\u4F9B\u670D\u52A1\n";
+var hikingRoomId = ""; // TODO add hikningRoomId
+var buyHouseRoomId = ""; //TODO add buyHouseRoomId
+var messageBrokerIsabella = "\n\u5404\u4F4D\u7FA4\u53CB\u5927\u5BB6\u597D\uFF0C\u611F\u8C22 \u6211\u4EEC\u597D\u5BA4\u53CB\u7684\u8001\u7FA4\u53CB\u3001\u8001\u670B\u53CB Isabella \u5BF9\u597D\u5BA4\u53CB\u9879\u76EE\u7EC4\u7684\u652F\u6301\u3002\u5979\u73B0\u5728\u662F\u8D2D\u623F\u4E2D\u4ECB(Realtor)\uFF0C\u7FA4\u91CC\u4E5F\u6709\u4E0D\u5C11\u670B\u53CB\u7528\u8FC7 Isabella \u7684\u670D\u52A1\uFF0C\u8BC4\u4EF7\u5F88\u597D\u3002\n\u597D\u5BA4\u53CB\u63A8\u8350\u7684Real Estate Agent\nIsabella Sun (\u5B59\u9759\u8339)  \nIsabella\u662F\u4E00\u540D\u7845\u8C37\u8D44\u6DF1\u623F\u5730\u4EA7\u7ECF\u7EAA\u4EBA, \u5168\u7F8Etop 1% \u5730\u4EA7\u7ECF\u7EAA\u3002\u5979\u5C45\u4F4F\u7F8E\u56FD10\u4F59\u5E74\uFF0C2013\u5E74\u5BBE\u5915\u6CD5\u5C3C\u4E9A\u5927\u5B66\u53D6\u5F97\u7855\u58EB\u5B66\u4F4D\u540E\u6765\u5230\u6E7E\u533A\uFF0C\u76EE\u524D\u5C31\u804C\u4E8EColdwell Banker (\u79D1\u5A01\u623F\u5730\u4EA7\u516C\u53F8\uFF0C\u7F8E\u56FD\u6700\u5927\u7684\u5730\u4EA7\u516C\u53F8\u4E4B\u4E00)\uFF0C\u5728Coldwell Banker\u5317\u52A0\u5DDE\u56DB\u4E94\u5343\u4E2Aagent\u4E2D\uFF0C\u4E2A\u4EBA\u6392\u540D\u524D25\u540D\u3002Zillow\u51685\u661F\u597D\u8BC4\uFF08\u4E13\u4E1A\u623F\u4EA7\u7F51\u7AD9\u5B9E\u540D\u6210\u4EA4\u597D\u8BC4\uFF09\uFF0C\u5E76\u4E14\u597D\u5BA4\u53CB\u4E2D\u4E5F\u6709\u4E0D\u5C11\u4EBA\u627EIsabella\u4E70\u5356\u8FC7\u623F\u5B50\uFF0C\u5168\u90E85\u661F\u597D\u8BC4\u3002\n\u8054\u7CFB\u65B9\u5F0F\uFF1A\nIsabella Sun\nMobile: 650.933.8799\nEmail: isabella.sun@cbnorcal.com\nWeChat: IsabellaSun_USA \n";
+var messageBrokerIsabellaRefer = "\n\u672C\u7FA4\u6709\u82E5\u5E72\u7FA4\u53CB\u5BF9Isabella\u7684\u8BC4\u4EF7\u8282\u9009\u5982\u4E0B\nJ\u7FA4\u53CB\uFF1A\n\u201C...She is very patient with first-time home buyers like me, and knowledgable enough to answer all kinds of questions from me. Also, she gave me a lot of very useful advice on our home purchase, including design and pricing. Moreover, she was very responsive  whenever I asked her for help. Last but not least, she is really good at negotiation. She helped us get a huge discount from the seller prior to closing. Highly recommend! \u201D \nY\u7FA4\u53CB\uFF1A\n\u201C...Isabella is very patient and quick in response throughout the process, from open house visits to closing. We are very impressed by her insights into the market and negotiation skills...\u201D \nL\u7FA4\u53CB\uFF1A\n\u201C...She is professional, responsive, and very knowledgeable.  This was not our first home purchase, but even so, we found her guidance and insight to be tremendously valuable.  She also did an amazing job with negotiations --  being proactive, keeping us up to date, and  helping us purchase the home at a fantastic price... \u201D\nZ\u7FA4\u53CB\uFF1A\n\u201C...Isabella is very responsible and responsive throughout the entire process. She is also knowledgeable about all aspects of purchasing a home. Appreciate  her help and highly recommend her...\u201D\nY\u7FA4\u53CB\uFF1A\n\u201C...She was willing to spend large amount of time helping me explore different options. With her expertise and diligence, I was able to find the home best suits my needs...\u201D";
 var HARDCODED_ADMINS = [
     // from 大军团
     "haoshiyou-bot",
@@ -201,7 +205,7 @@ var HsyBot = /** @class */ (function () {
         this.chatRouter.register(new chat_router_1.ChatRoute('JoinHsyRoom', function (message) { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, message.to().self() && // only messsage to me
-                        /^(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)$/.test(chinese_conv_1.sify(message.text()))];
+                        /(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)/.test(chinese_conv_1.sify(message.text()))];
             });
         }); }, function (message, context) { return __awaiter(_this, void 0, void 0, function () {
             var _loop_1, this_1, _i, _a, roomId, state_1;
@@ -258,6 +262,97 @@ var HsyBot = /** @class */ (function () {
                         _i++;
                         return [3 /*break*/, 1];
                     case 4: return [2 /*return*/];
+                }
+            });
+        }); }));
+        this.chatRouter.register(new chat_router_1.ChatRoute('JoinHiking', function (message) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, message.to().self() && /爬山/.test(chinese_conv_1.sify(message.text()))];
+            });
+        }); }, function (message, context) { return __awaiter(_this, void 0, void 0, function () {
+            var room;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, message.from().say("\u6B22\u8FCE\u52A0\u5165\u7FA4\u4E3B\u7EC4\u7EC7\u7684\u53E6\u4E00\u4E2A\u793E\u533A\uFF1A\u9760\u8C31\u2122 \u722C\u5C71\u7FA4\uFF0C\u7FA4\u4E3B\u8F7D\u5357\u548C\u7FA4\u91CC\u7684\u5404\u9760\u8C31\u961F\u957F\u5C06\u4E0D\u5B9A\u671F\u7EC4\u7EC7\u722C\u5C71\u6D3B\u52A8")];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, message.from().say("\u6B22\u8FCE\u52A0\u5165")];
+                                    case 2:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })];
+                    case 1:
+                        _a.sent();
+                        room = this.wechaty.Room.load(hikingRoomId);
+                        return [4 /*yield*/, room.sync()];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, room.add(message.from())];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        }); }));
+        this.chatRouter.register(new chat_router_1.ChatRoute('BuyHouse', function (message) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, message.to().self() && /买房|购房/.test(chinese_conv_1.sify(message.text()))];
+            });
+        }); }, function (message, context) { return __awaiter(_this, void 0, void 0, function () {
+            var room;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, message.from().say(messageBrokerIsabella)];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, message.from().say(messageBrokerIsabellaRefer)];
+                                    case 2:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })];
+                    case 1:
+                        _a.sent();
+                        room = this.wechaty.Room.load(buyHouseRoomId);
+                        return [4 /*yield*/, room.sync()];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, room.add(message.from())];
+                                        case 1:
+                                            _a.sent();
+                                            return [4 /*yield*/, message.from().say("\u6B22\u8FCE\u52A0\u5165\u6211\u4EEC\u597D\u5BA4\u53CB\u2122\u4E70\u623F\u7FA4\u7684\u8BA8\u8BBA")];
+                                        case 2:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 3:
+                        _a.sent();
+                        return [2 /*return*/];
                 }
             });
         }); }));
@@ -318,7 +413,7 @@ var HsyBot = /** @class */ (function () {
                                     return [4 /*yield*/, this.chatRouter.process(message)];
                                 case 1:
                                     routeName = _a.sent();
-                                    logger.debug("handled message " + message + " with routeName " + routeName);
+                                    logger.debug("handled message from(" + message.from().id + ") to(" + (message.to() ? message.to().id || message.room().id : ) + ") " + message + " with routeName " + routeName);
                                     return [2 /*return*/];
                             }
                         });

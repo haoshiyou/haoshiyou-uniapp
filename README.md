@@ -34,11 +34,13 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 - Room Action
   - [X] Add to HSY Rooms
   - [X] (Safe)-kick from HSY Rooms
-  - [ ] Blacklist + Kick + Extend Kick
-  - [ ] Make Room Announcement
+  - [1] Blacklist + Kick + Extend Kick
+  - [1] Make Room Announcement
   - [X] (maybe)Downsize
-  - [ ] Record invitation
-  - [ ] Accept Friendship
+  - [1] Record invitation
+  - [1] Accept Friendship
+  - [1] Record Friendship
+  - [2] Automatic Remove Friendship?
 
 - Intention Parsing
   - [X] SeekInstruction

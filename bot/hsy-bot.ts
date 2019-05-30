@@ -41,7 +41,39 @@ const greetingMsg = `请问你要加哪个区域的群？
   【西雅图】我们新开设了西雅图好室友群，服务大西雅图地区
   【短租】如果你希望在旧金山湾区任意地方内进行3个月以内短租（出租和求租），请加短租群
 请回复要加哪个群，例如： 南湾西
+ 
+另外 回复
+  【爬山】加入群主的靠谱爬山群，不定期组织湾区附近的爬山活动，认识新朋友
+  【买房】了解硅谷买房信息、加入购房群参与讨论，我们的社区老友也将为你提供服务
 `;
+
+const hikingRoomId = ""; // TODO add hikningRoomId
+const buyHouseRoomId = ""; //TODO add buyHouseRoomId
+
+const messageBrokerIsabella = `
+各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。
+好室友推荐的Real Estate Agent
+Isabella Sun (孙静茹)  
+Isabella是一名硅谷资深房地产经纪人, 全美top 1% 地产经纪。她居住美国10余年，2013年宾夕法尼亚大学取得硕士学位后来到湾区，目前就职于Coldwell Banker (科威房地产公司，美国最大的地产公司之一)，在Coldwell Banker北加州四五千个agent中，个人排名前25名。Zillow全5星好评（专业房产网站实名成交好评），并且好室友中也有不少人找Isabella买卖过房子，全部5星好评。
+联系方式：
+Isabella Sun
+Mobile: 650.933.8799
+Email: isabella.sun@cbnorcal.com
+WeChat: IsabellaSun_USA 
+`;
+
+const messageBrokerIsabellaRefer = `
+本群有若干群友对Isabella的评价节选如下
+J群友：
+“...She is very patient with first-time home buyers like me, and knowledgable enough to answer all kinds of questions from me. Also, she gave me a lot of very useful advice on our home purchase, including design and pricing. Moreover, she was very responsive  whenever I asked her for help. Last but not least, she is really good at negotiation. She helped us get a huge discount from the seller prior to closing. Highly recommend! ” 
+Y群友：
+“...Isabella is very patient and quick in response throughout the process, from open house visits to closing. We are very impressed by her insights into the market and negotiation skills...” 
+L群友：
+“...She is professional, responsive, and very knowledgeable.  This was not our first home purchase, but even so, we found her guidance and insight to be tremendously valuable.  She also did an amazing job with negotiations --  being proactive, keeping us up to date, and  helping us purchase the home at a fantastic price... ”
+Z群友：
+“...Isabella is very responsible and responsive throughout the entire process. She is also knowledgeable about all aspects of purchasing a home. Appreciate  her help and highly recommend her...”
+Y群友：
+“...She was willing to spend large amount of time helping me explore different options. With her expertise and diligence, I was able to find the home best suits my needs...”`;
 
 const HARDCODED_ADMINS = [
   // from 大军团
@@ -156,7 +188,7 @@ export class HsyBot {
       'JoinHsyRoom',
       async (message:Message) => {
         return message.to().self() &&  // only messsage to me
-          /^(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)$/.test(sify(message.text()));
+          /(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)/.test(sify(message.text()));
       },
       async (message:Message, context) => {
         for (let roomId of Object.keys(hsyRoomsIdToNameMap)) {
@@ -172,6 +204,41 @@ export class HsyBot {
             return ;
           }
         }
+      }));
+
+    this.chatRouter.register(new ChatRoute(
+      'JoinHiking',
+      async (message:Message) => {
+        return message.to().self() && /爬山/.test(sify(message.text()));
+      },
+      async (message:Message, context) => {
+        await this.limiter.schedule(async () => {
+          await message.from().say(`欢迎加入群主组织的另一个社区：靠谱™ 爬山群，群主载南和群里的各靠谱队长将不定期组织爬山活动`);        await message.from().say(`欢迎加入`);
+        });
+        let room = this.wechaty.Room.load(hikingRoomId);
+        await room.sync();
+        await this.limiter.schedule(async () => {
+          await room.add(message.from());
+        });
+      }));
+
+    this.chatRouter.register(new ChatRoute(
+      'BuyHouse',
+      async (message:Message) => {
+        return message.to().self() && /买房|购房/.test(sify(message.text()));
+      },
+      async (message:Message, context) => {
+        await this.limiter.schedule(async () => {
+          await message.from().say(messageBrokerIsabella);
+          await message.from().say(messageBrokerIsabellaRefer);
+        });
+        let room = this.wechaty.Room.load(buyHouseRoomId);
+        await room.sync();
+
+        await this.limiter.schedule(async () => {
+          await room.add(message.from());
+          await message.from().say(`欢迎加入我们好室友™买房群的讨论`);
+        });
       }));
 
     this.chatRouter.register(new ChatRoute(
@@ -206,7 +273,7 @@ export class HsyBot {
       .on('message', async (message: Message) => {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
-        logger.debug(`handled message ${message} with routeName ${routeName}`);
+        logger.debug(`handled message from(${message.from().id}) to(${message.to() ? message.to().id || message.room().id}) ${message} with routeName ${routeName}`);
       })
       .on('friendship', async (friendship: Friendship) => {
         logger.debug(`Received friendship ${friendship}`);

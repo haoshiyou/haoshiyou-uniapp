@@ -31,7 +31,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [ ] isBlacklisted
 
 - Room Action
-  - [ ] Add to HSY Rooms
+  - [X] Add to HSY Rooms
   - [ ] (Safe)-kick from HSY Rooms
   - [ ] Blacklist + Kick + Extend Kick
   - [ ] Make Room Announcement
@@ -39,8 +39,8 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [ ] Record invitation
 
 - Intention Parsing
-  - [ ] SeekInstruction
-  - [ ] JoinRoom
+  - [X] SeekInstruction
+  - [X] JoinRoom + which room 
   - [ ] PostListing
 
 - Other
@@ -68,7 +68,11 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 {
   _id: "contact.id"
 }
-
-
-
 ```
+
+
+### Next Generation
+  // intent framework
+  // message comes in, getting the intent, or collectively getting intent
+  // when more intent is getting in emit intent and intent state
+  // intent, knowledge, intent related knowledge

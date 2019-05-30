@@ -20,3 +20,55 @@ $ npm run generate
 ```
 
 For detailed explanation on how things work, checkout [Nuxt.js docs](https://nuxtjs.org).
+
+## Features
+### Bot
+- Utils - utility methods to be used
+  - [ ] isAdmin
+  - [ ] isWhitelisted
+  - [ ] isGoodNickname
+  - [ ] shouldCare
+  - [ ] isBlacklisted
+
+- Room Action
+  - [ ] Add to HSY Rooms
+  - [ ] (Safe)-kick from HSY Rooms
+  - [ ] Blacklist + Kick + Extend Kick
+  - [ ] Make Room Announcement
+  - [ ] (maybe)Downsize
+  - [ ] Record invitation
+
+- Intention Parsing
+  - [ ] SeekInstruction
+  - [ ] JoinRoom
+  - [ ] PostListing
+
+- Other
+ - [ ] Downsize friendships? not so soon
+ - [ ] Use cronjob to post announcement
+ - [ ] Use npmjs.org/bottleneck to limit rate
+
+## MongoDB schema
+```json5
+// Message
+{
+  _id: "message.id"
+},
+// MessageMeta
+{
+  _id: "message.id"
+},
+
+// Contact
+{
+  _id: "contact.id"
+}
+
+// ContactMeta
+{
+  _id: "contact.id"
+}
+
+
+
+```

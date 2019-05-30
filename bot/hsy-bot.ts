@@ -4,7 +4,7 @@ import {ChatRoute, ChatRouter} from "./chat-router";
 import {sify} from 'chinese-conv';
 import Bottleneck from "bottleneck";
 import {ContactType} from "wechaty-puppet";
-import {Db, MongoClient} from "mongodb";
+import {Db} from "mongodb";
 
 const log4js = require('log4js');
 const logger = log4js.getLogger();
@@ -112,7 +112,7 @@ export class HsyBot {
       'AdminBlacklist',
       async (message:Message):Promise<boolean> =>
           /^加黑 /.test(sify(message.text()))
-          && message.to().id === this.wechaty.userSelf().id // talk directly to myself
+          && message.to().self() // talk directly to myself
           && await this.isAdmin(message.from().id) // talk is an admin
       ,
       async (message:Message, context) => {
@@ -123,7 +123,7 @@ export class HsyBot {
       'AdminKick',
       async (message:Message):Promise<boolean> =>
         /^踢 /.test(sify(message.text()))
-        && message.to().id === this.wechaty.userSelf().id // talk directly to myself
+        && message.to().self()  // talk directly to myself
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
@@ -134,7 +134,7 @@ export class HsyBot {
       'AdminAnnounce',
       async (message:Message):Promise<boolean> =>
         /^公告 /.test(sify(message.text()))
-        && message.to().id === this.wechaty.userSelf().id // talk directly to myself
+        && message.to().self()  // talk directly to myself
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
@@ -144,7 +144,8 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'JoinHsyRoom',
       async (message:Message) => {
-        return /^(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)$/.test(sify(message.text()));
+        return message.to().self() &&  // only messsage to me
+          /^(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)$/.test(sify(message.text()));
       },
       async (message:Message, context) => {
         for (let roomId of Object.keys(hsyRoomsIdToNameMap)) {
@@ -154,7 +155,7 @@ export class HsyBot {
             await this.limiter.schedule(async () => {
               let room:Room = this.wechaty.Room.load(roomId);
               await room.sync();
-              // TODO add maybe downsize room
+              await this.maybeDownsize(room);
               await room.add(message.from());
             });
             return ;
@@ -165,7 +166,7 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'SeekInstructions',
       async (message:Message) => {
-        return /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text()));
+        return message.to().self() && /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text()));
     },
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
@@ -214,37 +215,26 @@ export class HsyBot {
   }
 
   /**
-   * Check if user is admin, query both local hard-coded and storage
-   * @param id
+   * Check if user is admin, only hardcoded
+   * @param contactId
    */
-  public async isAdmin(contactId:string):Promise<boolean> {
-
-    if (HARDCODED_ADMINS.indexOf(contactId) >= 0) return true;
-    let contactMetas = await this.mongodb.collection(`ContactMeta`)
-      .find({_id: contactId}).toArray();
-    console.assert(contactMetas.length == 0 || contactMetas.length == 1,
-      `Should return ind 0 or 1 contact`);
-    return (contactMetas.length == 1 && contactMetas[0][`isAdmin`]);
+  private isAdmin(contactId:string):boolean {
+    return HARDCODED_ADMINS.indexOf(contactId) >= 0;
   }
 
   /**
-   * Check if user is whitelisted, query both local hard-coded and storage
-   * @param id
+   * Check if user is whitelisted, only hardcoded
+   * @param contactId
    */
-  public async isWhitelistedNonAdmin(contactId:string):Promise<boolean> {
-    if (HARDCODED_WHITELIST.indexOf(contactId) >= 0) return true;
-    let contactMetas = await this.mongodb.collection(`ContactMeta`)
-      .find({_id: contactId}).toArray();
-    console.assert(contactMetas.length == 0 || contactMetas.length == 1,
-      `Should return ind 0 or 1 contact`);
-    return (contactMetas.length == 1 && contactMetas[0][`isWhitelisted`]);
+  private isWhitelistedNonAdmin(contactId:string):boolean {
+    return HARDCODED_WHITELIST.indexOf(contactId) >= 0;
   }
 
   /**
    * Check if user is blacklisted, query both local hard-coded and storage
    * @param id
    */
-  public async isBlacklisted(contactId:string):Promise<boolean> {
+  private async isBlacklisted(contactId:string):Promise<boolean> {
     let contactMetas = await this.mongodb.collection(`ContactMeta`)
       .find({_id: contactId}).toArray();
     console.assert(contactMetas.length == 0 || contactMetas.length == 1,
@@ -252,23 +242,48 @@ export class HsyBot {
     return (contactMetas.length == 1 && contactMetas[0][`isBlacklisted`]);
   }
 
-  public static isGoodNickname(nickname:string):boolean {
+  private isGoodNickname(nickname:string):boolean {
     return /^(招|求|介|管)-/.test(nickname);
   }
 
-  public async getRelatedUsers(id:string, degreeOfExtension:number = 0):Promise<Array<string>> {
+  private async getRelatedUsers(id:string, degreeOfExtension:number = 0):Promise<Array<string>> {
     // TODO impl
     return [];
   }
 
-  public async saveKickFromRoom(room:Room, contact:Contact) {
-    if ((await this.isAdmin(contact.id)) || (await this.isWhitelistedNonAdmin(contact.id))) {
+  private async saveKickFromRoom(room:Room, contact:Contact) {
+    if (contact.self() || this.isAdmin(contact.id) || this.isWhitelistedNonAdmin(contact.id)) {
+      logger.warn(`trying to safe kick a contact ${contact} from room ${room}, but ignored`);
+    } else {
       await this.limiter.schedule(async () => {
         await room.del(contact);
       });
-    } else {
-      logger.warn(`trying to safe kick a contact ${contact} from room ${room}, but ignored`);
     }
+  }
+
+  private async maybeDownsize(room:Room):Promise<boolean> {
+    const DOWNSIZE_THRESHOLD = 475;
+    let members:Contact[] = await room.memberAll();
+    if (members.length >= DOWNSIZE_THRESHOLD) {
+      let allCandidates:Contact[] = members.slice(0, members.length - 50)
+        .filter(async (c:Contact) => (this.isAdmin(c.id) || this.isWhitelistedNonAdmin(c.id))); // we protect the latested 50 candidates
+      let badNickUsers:Contact[] = allCandidates.filter(async (c:Contact) => (!this.isGoodNickname(await room.alias(c)))).slice(0, 25);
+      let oldUsers:Contact[] = allCandidates.filter(c => badNickUsers.indexOf(c) <0).slice(0, 50 - badNickUsers.length);
+      await this.limiter.schedule(async () => {
+        await room.say(`不好意思群满了，我们清理一下给新的朋友腾位置。优先清理没有按照格式(例如:"招-mtv-5.1-王小明")修改取昵称的朋友。有需求可以重新加机器人入群`);
+      });
+      badNickUsers.forEach(async (contact:Contact) => await this.saveKickFromRoom(room, contact));
+      oldUsers.forEach(async (contact:Contact) => await this.saveKickFromRoom(room, contact));
+
+      await this.limiter.schedule(async () => {
+        await room.say(`清理完毕`);
+      });
+      // get delete candidate for non valid nickname
+      // get delete candidate for old users
+
+      return true;
+    }
+    return false;
   }
 
 }

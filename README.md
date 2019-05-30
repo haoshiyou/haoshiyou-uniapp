@@ -24,15 +24,16 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 ## Features
 ### Bot
 - Utils - utility methods to be used
-  - [ ] isAdmin
-  - [ ] isWhitelisted
-  - [ ] isGoodNickname
-  - [ ] shouldCare
-  - [ ] isBlacklisted
+  - [X] isAdmin
+  - [X] isWhitelisted
+  - [X] isGoodNickname
+  - [X] shouldCare
+  - [X] isBlacklisted
+  - [ ] getRelatedUsers
 
 - Room Action
   - [X] Add to HSY Rooms
-  - [ ] (Safe)-kick from HSY Rooms
+  - [X] (Safe)-kick from HSY Rooms
   - [ ] Blacklist + Kick + Extend Kick
   - [ ] Make Room Announcement
   - [ ] (maybe)Downsize
@@ -46,7 +47,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 - Other
  - [ ] Downsize friendships? not so soon
  - [ ] Use cronjob to post announcement
- - [ ] Use npmjs.org/bottleneck to limit rate
+ - [X] Use npmjs.org/bottleneck to limit rate
 
 ## MongoDB schema
 ```json5
@@ -57,12 +58,34 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   },
   // MessageMeta
   MessageMeta: {
-    _id: "message.id"
+    _id: "message.id",
   },
   
   // Contact
   Contact: {
-    _id: "contact.id"
+    _id: "contact.id",
+    isAdmin: "boolean",
+    isWhitelisted: "boolean",
+    isBlacklisted: "boolean",
+    invited: [{
+      inviterId: "string", 
+      timestamp: "datetime", 
+      roomId: "string" 
+    }],
+    invitedBy: [{
+      inviterId: "string", 
+      timestamp: "datetime", 
+      roomId: "string" 
+    }],
+    blacklistedRecords: [
+      { 
+        adminId: "string",
+        timestamp: "datetime",
+        direct: "boolean", // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
+        causeRelatedUserId: "string",
+        degreeOfExtension: "number"
+      },
+    ]
   },
   
   // ContactMeta

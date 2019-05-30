@@ -62,18 +62,55 @@ var hsyRoomsIdToNameMap = {
     "106702284@chatroom": "南湾东",
     "314160598@chatroom": "中半岛",
 };
+var HARDCODED_ADMINS = [
+    // from 大军团
+    "haoshiyou-bot",
+    "haoshiyou-admin",
+    "haoshiyou-bot2",
+    "xinbenlv",
+    "xiaowusheng",
+    "wxid_wl56wlfbwn512",
+    "wxid_5ma39vrqixyn11",
+    "wxid_g7tm5wadh8ug11",
+    "wxid_2psmr08jb8yu22",
+    "wxid_i5nvum6hqzt312",
+    "shohoku11wrj",
+    "chenleidan",
+    "wxid_pq2et5qivaut11",
+    "amy-mido",
+    "lijiaqi",
+    "adamzhu1986",
+    "wxid_9i3qe4iaistq22",
+    "wxid_mp4e78qq2fl222",
+    "wxid_mqu5m5dvx9i822",
+    "a38372624",
+    "angela0622sx",
+    "wxid_zvjlfty9zs7f11",
+];
+var HARDCODED_WHITELIST = [
+    // from 测试群
+    "xiaowusheng",
+    "shohoku11wrj",
+    "wxid_2psmr08jb8yu22",
+    "wxid_5ma39vrqixyn11",
+    "wxid_9i3qe4iaistq22",
+    "wxid_mp4e78qq2fl222",
+    "xinbenlv",
+    "wxid_mqu5m5dvx9i822",
+];
 /**
  * A Bot built with WeChaty padpro
  * https://github.com/botorange/wechaty-puppet-padpro
  */
 var HsyBot = /** @class */ (function () {
-    function HsyBot(wechaty) {
+    function HsyBot(wechaty, mongodb) {
         var _this = this;
         this.limiter = new bottleneck_1.default({
             minTime: 1500
         });
         this.wechaty = wechaty;
         this.chatRouter = new chat_router_1.ChatRouter();
+        this.mongodb = mongodb;
         this.chatRouter.register(new chat_router_1.ChatRoute('Ignore', function (message) { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (message.from().id === this.wechaty.id) {
@@ -294,11 +331,21 @@ var HsyBot = /** @class */ (function () {
      * Check if user is admin, query both local hard-coded and storage
      * @param id
      */
-    HsyBot.prototype.isAdmin = function (id) {
+    HsyBot.prototype.isAdmin = function (contactId) {
         return __awaiter(this, void 0, void 0, function () {
+            var contactMetas;
             return __generator(this, function (_a) {
-                // TODO impl
-                return [2 /*return*/, false];
+                switch (_a.label) {
+                    case 0:
+                        if (HARDCODED_ADMINS.indexOf(contactId) >= 0)
+                            return [2 /*return*/, true];
+                        return [4 /*yield*/, this.mongodb.collection("ContactMeta")
+                                .find({ _id: contactId }).toArray()];
+                    case 1:
+                        contactMetas = _a.sent();
+                        console.assert(contactMetas.length == 0 || contactMetas.length == 1, "Should return ind 0 or 1 contact");
+                        return [2 /*return*/, (contactMetas.length == 1 && contactMetas[0]["isAdmin"])];
+                }
             });
         });
     };
@@ -306,11 +353,21 @@ var HsyBot = /** @class */ (function () {
      * Check if user is whitelisted, query both local hard-coded and storage
      * @param id
      */
-    HsyBot.prototype.isWhitelisted = function (id) {
+    HsyBot.prototype.isWhitelistedNonAdmin = function (contactId) {
         return __awaiter(this, void 0, void 0, function () {
+            var contactMetas;
             return __generator(this, function (_a) {
-                // TODO impl
-                return [2 /*return*/, false];
+                switch (_a.label) {
+                    case 0:
+                        if (HARDCODED_WHITELIST.indexOf(contactId) >= 0)
+                            return [2 /*return*/, true];
+                        return [4 /*yield*/, this.mongodb.collection("ContactMeta")
+                                .find({ _id: contactId }).toArray()];
+                    case 1:
+                        contactMetas = _a.sent();
+                        console.assert(contactMetas.length == 0 || contactMetas.length == 1, "Should return ind 0 or 1 contact");
+                        return [2 /*return*/, (contactMetas.length == 1 && contactMetas[0]["isWhitelisted"])];
+                }
             });
         });
     };
@@ -318,17 +375,23 @@ var HsyBot = /** @class */ (function () {
      * Check if user is blacklisted, query both local hard-coded and storage
      * @param id
      */
-    HsyBot.prototype.isBlacklisted = function (id) {
+    HsyBot.prototype.isBlacklisted = function (contactId) {
         return __awaiter(this, void 0, void 0, function () {
+            var contactMetas;
             return __generator(this, function (_a) {
-                // TODO impl
-                return [2 /*return*/, false];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.mongodb.collection("ContactMeta")
+                            .find({ _id: contactId }).toArray()];
+                    case 1:
+                        contactMetas = _a.sent();
+                        console.assert(contactMetas.length == 0 || contactMetas.length == 1, "Should return ind 0 or 1 contact");
+                        return [2 /*return*/, (contactMetas.length == 1 && contactMetas[0]["isBlacklisted"])];
+                }
             });
         });
     };
     HsyBot.isGoodNickname = function (nickname) {
-        // TODO impl
-        return false;
+        return /^(招|求|介|管)-/.test(nickname);
     };
     HsyBot.prototype.getRelatedUsers = function (id, degreeOfExtension) {
         if (degreeOfExtension === void 0) { degreeOfExtension = 0; }
@@ -336,6 +399,43 @@ var HsyBot = /** @class */ (function () {
             return __generator(this, function (_a) {
                 // TODO impl
                 return [2 /*return*/, []];
+            });
+        });
+    };
+    HsyBot.prototype.saveKickFromRoom = function (room, contact) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.isAdmin(contact.id)];
+                    case 1:
+                        _a = (_b.sent());
+                        if (_a) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.isWhitelistedNonAdmin(contact.id)];
+                    case 2:
+                        _a = (_b.sent());
+                        _b.label = 3;
+                    case 3:
+                        if (!_a) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.limiter.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, room.del(contact)];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 4:
+                        _b.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        logger.warn("trying to safe kick a contact " + contact + " from room " + room + ", but ignored");
+                        _b.label = 6;
+                    case 6: return [2 /*return*/];
+                }
             });
         });
     };

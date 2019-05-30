@@ -4,6 +4,7 @@ import {ChatRoute, ChatRouter} from "./chat-router";
 import {sify} from 'chinese-conv';
 import Bottleneck from "bottleneck";
 import {ContactType} from "wechaty-puppet";
+import {Db, MongoClient} from "mongodb";
 
 const log4js = require('log4js');
 const logger = log4js.getLogger();
@@ -31,6 +32,45 @@ const hsyRoomsIdToNameMap = {
   "314160598@chatroom": "中半岛",   // : "【好室友】中半岛租房群",
 };
 
+const HARDCODED_ADMINS = [
+  // from 大军团
+  "haoshiyou-bot",
+  "haoshiyou-admin",
+  "haoshiyou-bot2",
+  "xinbenlv", // zzn, zainan
+  "xiaowusheng", // 易耿超
+  "wxid_wl56wlfbwn512", // 刘宵含
+  "wxid_5ma39vrqixyn11", // 杜秋莎
+  "wxid_g7tm5wadh8ug11",  // 周琳
+  "wxid_2psmr08jb8yu22", // haoshiyou-bot2
+  "wxid_i5nvum6hqzt312", // 杜秋莎2
+  "shohoku11wrj", // 翁仁杰
+  "chenleidan", // 陈镭丹
+  "wxid_pq2et5qivaut11", // 汪沛沛
+  "amy-mido", // 黄元蕾
+  "lijiaqi", // Jack Li
+  "adamzhu1986", // 朱旭东
+  "wxid_9i3qe4iaistq22", // haoshiyou-bot
+  "wxid_mp4e78qq2fl222", // 助理载
+  "wxid_mqu5m5dvx9i822", // 非高仿
+  "a38372624", // WilliamChen
+  "angela0622sx", // 雷梦雪
+  "wxid_zvjlfty9zs7f11", // KittyHe
+];
+
+const HARDCODED_WHITELIST = [
+  // from 测试群
+  "xiaowusheng", // gengchao
+  "shohoku11wrj", // renjie
+  "wxid_2psmr08jb8yu22", // haoshiyou-admin
+  "wxid_5ma39vrqixyn11", // shasha 杜秋莎
+  "wxid_9i3qe4iaistq22", // haoshiyou-bot
+  "wxid_mp4e78qq2fl222", // haoshiyou-bot2
+  "xinbenlv", // xinbenlv
+  "wxid_mqu5m5dvx9i822", // xinbenlv-g
+];
+
+
 /**
  * A Bot built with WeChaty padpro
  * https://github.com/botorange/wechaty-puppet-padpro
@@ -40,13 +80,15 @@ export class HsyBot {
   private wechaty:Wechaty;
   private qrcode: string;
   private chatRouter:ChatRouter;
+  private mongodb:Db;
   private limiter = new Bottleneck({
     minTime: 1500
   });
 
-  constructor(wechaty:Wechaty) {
+  constructor(wechaty:Wechaty, mongodb:Db) {
     this.wechaty = wechaty;
     this.chatRouter = new ChatRouter();
+    this.mongodb = mongodb;
     this.chatRouter.register(new ChatRoute(
       'Ignore',
       async (message:Message) => {
@@ -175,38 +217,58 @@ export class HsyBot {
    * Check if user is admin, query both local hard-coded and storage
    * @param id
    */
-  public async isAdmin(id:string):Promise<boolean> {
+  public async isAdmin(contactId:string):Promise<boolean> {
 
-    // TODO impl
-    return false;
+    if (HARDCODED_ADMINS.indexOf(contactId) >= 0) return true;
+    let contactMetas = await this.mongodb.collection(`ContactMeta`)
+      .find({_id: contactId}).toArray();
+    console.assert(contactMetas.length == 0 || contactMetas.length == 1,
+      `Should return ind 0 or 1 contact`);
+    return (contactMetas.length == 1 && contactMetas[0][`isAdmin`]);
   }
 
   /**
    * Check if user is whitelisted, query both local hard-coded and storage
    * @param id
    */
-  public async isWhitelisted(id:string):Promise<boolean> {
-    // TODO impl
-    return false;
+  public async isWhitelistedNonAdmin(contactId:string):Promise<boolean> {
+    if (HARDCODED_WHITELIST.indexOf(contactId) >= 0) return true;
+    let contactMetas = await this.mongodb.collection(`ContactMeta`)
+      .find({_id: contactId}).toArray();
+    console.assert(contactMetas.length == 0 || contactMetas.length == 1,
+      `Should return ind 0 or 1 contact`);
+    return (contactMetas.length == 1 && contactMetas[0][`isWhitelisted`]);
   }
 
   /**
    * Check if user is blacklisted, query both local hard-coded and storage
    * @param id
    */
-  public async isBlacklisted(id:string):Promise<boolean> {
-    // TODO impl
-    return false;
+  public async isBlacklisted(contactId:string):Promise<boolean> {
+    let contactMetas = await this.mongodb.collection(`ContactMeta`)
+      .find({_id: contactId}).toArray();
+    console.assert(contactMetas.length == 0 || contactMetas.length == 1,
+      `Should return ind 0 or 1 contact`);
+    return (contactMetas.length == 1 && contactMetas[0][`isBlacklisted`]);
   }
 
   public static isGoodNickname(nickname:string):boolean {
-    // TODO impl
-    return false;
+    return /^(招|求|介|管)-/.test(nickname);
   }
 
   public async getRelatedUsers(id:string, degreeOfExtension:number = 0):Promise<Array<string>> {
     // TODO impl
     return [];
+  }
+
+  public async saveKickFromRoom(room:Room, contact:Contact) {
+    if ((await this.isAdmin(contact.id)) || (await this.isWhitelistedNonAdmin(contact.id))) {
+      await this.limiter.schedule(async () => {
+        await room.del(contact);
+      });
+    } else {
+      logger.warn(`trying to safe kick a contact ${contact} from room ${room}, but ignored`);
+    }
   }
 
 }

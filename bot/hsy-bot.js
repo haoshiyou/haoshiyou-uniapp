@@ -462,8 +462,6 @@ var HsyBot = /** @class */ (function () {
                             }); })];
                     case 3:
                         _a.sent();
-                        // get delete candidate for non valid nickname
-                        // get delete candidate for old users
                         return [2 /*return*/, true];
                     case 4: return [2 /*return*/, false];
                 }

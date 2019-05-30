@@ -278,8 +278,6 @@ export class HsyBot {
       await this.limiter.schedule(async () => {
         await room.say(`清理完毕`);
       });
-      // get delete candidate for non valid nickname
-      // get delete candidate for old users
 
       return true;
     }

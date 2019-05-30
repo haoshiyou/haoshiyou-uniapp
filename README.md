@@ -36,7 +36,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [X] (Safe)-kick from HSY Rooms
   - [ ] Blacklist + Kick + Extend Kick
   - [ ] Make Room Announcement
-  - [ ] (maybe)Downsize
+  - [X] (maybe)Downsize
   - [ ] Record invitation
 
 - Intention Parsing
@@ -62,13 +62,13 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   },
   
   // Contact
-  Contact: {
+  ContactMeta: {
     _id: "contact.id",
     isAdmin: "boolean",
     isWhitelisted: "boolean",
     isBlacklisted: "boolean",
     invited: [{
-      inviterId: "string", 
+      inviteeId: "string", 
       timestamp: "datetime", 
       roomId: "string" 
     }],
@@ -89,7 +89,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   },
   
   // ContactMeta
-  ContactMeta: {,
+  Contact: {
     _id: "contact.id"
   }
 }

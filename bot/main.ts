@@ -9,7 +9,7 @@ let main = async function() {
     token: process.env.WECHATY_PUPPET_PADPRO_TOKEN,
   });
 
-  const wechaty = new Wechaty({
+  const wechaty:Wechaty = new Wechaty({
     puppet,
   });
 

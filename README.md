@@ -50,24 +50,27 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 
 ## MongoDB schema
 ```json5
-// Message
 {
-  _id: "message.id"
-},
-// MessageMeta
-{
-  _id: "message.id"
-},
-
-// Contact
-{
-  _id: "contact.id"
+  // Message
+  Message: {
+    _id: "message.id"
+  },
+  // MessageMeta
+  MessageMeta: {
+    _id: "message.id"
+  },
+  
+  // Contact
+  Contact: {
+    _id: "contact.id"
+  },
+  
+  // ContactMeta
+  ContactMeta: {,
+    _id: "contact.id"
+  }
 }
 
-// ContactMeta
-{
-  _id: "contact.id"
-}
 ```
 
 

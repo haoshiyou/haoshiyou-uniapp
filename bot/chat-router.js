@@ -9,6 +9,7 @@ var ChatRoute = /** @class */ (function () {
         return this.matchFn(message);
     };
     ChatRoute.prototype.handle = function (message, context) {
+        if (context === void 0) { context = null; }
         this.handleFn(message, context);
     };
     ChatRoute.prototype.getRouteName = function () {
@@ -29,6 +30,7 @@ var ChatRouter = /** @class */ (function () {
         this.chatRoutes.push(chatRoute);
     };
     ChatRouter.prototype.process = function (message, context) {
+        if (context === void 0) { context = null; }
         // match and handle in the order, exit at the first match
         for (var _i = 0, _a = this.chatRoutes; _i < _a.length; _i++) {
             var chatRoute = _a[_i];

@@ -1,6 +1,6 @@
 export class ChatRoute {
-  private readonly matchFn;
-  private readonly handleFn;
+  private readonly matchFn: (msg, ctx) => Promise<boolean>;
+  private readonly handleFn: (msg, ctx) => Promise<void>;
   private readonly routeName:string;
   constructor(
     routeName:string,
@@ -8,14 +8,15 @@ export class ChatRoute {
     handleFn:(msg, ctx) => Promise<void>) {
     this.matchFn = matchFn;
     this.handleFn = handleFn;
+    this.routeName = routeName;
   }
 
-  public routeMatch(message):boolean {
-    return this.matchFn(message);
+  public async routeMatch(message, context = null):Promise<boolean> {
+    return await this.matchFn(message, context);
   }
 
-  public handle(message, context = null) {
-    this.handleFn(message, context);
+  public async handle(message, context = null):Promise<void> {
+    return await this.handleFn(message, context);
   }
 
   public getRouteName():string {
@@ -34,13 +35,15 @@ export class ChatRouter {
     this.chatRoutes.push(chatRoute);
   }
 
-  public process(message, context = null):string {
+  public async process(message, context = null):Promise<string> {
     // match and handle in the order, exit at the first match
     for (let chatRoute of this.chatRoutes) {
-      if (chatRoute.routeMatch(message)) {
-        chatRoute.handle(message, context);
+      let shouldMatch = await chatRoute.routeMatch(message);
+      if (shouldMatch) {
+        await chatRoute.handle(message, context);
         return chatRoute.getRouteName();
       }
     }
+    return `NoMatchRoute`;
   }
 }

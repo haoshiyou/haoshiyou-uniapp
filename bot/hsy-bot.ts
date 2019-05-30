@@ -101,7 +101,7 @@ export class HsyBot {
         } else if (message.from().type() !== ContactType.Personal) {
           return true; // yes, ignore message from not personal contacts
         }
-          else return false;
+        else return false;
       },
       async (message):Promise<void> => {
         // ignoring it, does nothing, oh, maybe simply logging?
@@ -205,7 +205,7 @@ export class HsyBot {
       .on('message', async (message: Message) => {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
-        logger.debug(`handled with name ${routeName}`);
+        logger.debug(`handled message ${message} with routeName ${routeName}`);
       })
       .on('room-join', (room: Room, inviteeList: Contact[], inviter: Contact) => {
         // TODO record who invites who and shows the message of bonus

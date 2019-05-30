@@ -315,7 +315,7 @@ var HsyBot = /** @class */ (function () {
                                     return [4 /*yield*/, this.chatRouter.process(message)];
                                 case 1:
                                     routeName = _a.sent();
-                                    logger.debug("handled with name " + routeName);
+                                    logger.debug("handled message " + message + " with routeName " + routeName);
                                     return [2 /*return*/];
                             }
                         });

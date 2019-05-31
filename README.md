@@ -29,28 +29,39 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [X] isGoodNickname
   - [X] shouldCare
   - [X] isBlacklisted
-  - [ ] getRelatedUsers
+  - [X] getRelatedUsers
 
 - Room Action
   - [X] Add to HSY Rooms
   - [X] (Safe)-kick from HSY Rooms
-  - [1] Blacklist + Kick + Extend Kick
-  - [1] Make Room Announcement
+  - [X] Blacklist + Extend
+  - [X] Kick
+  - [X] Make Room Announcement
   - [X] (maybe)Downsize
-  - [1] Record invitation
-  - [1] Accept Friendship
-  - [1] Record Friendship
-  - [2] Automatic Remove Friendship?
+  - [X] Record invitation
+  - [X] Accept Friendship
+  - [X] Record Friendship
 
 - Intention Parsing
   - [X] SeekInstruction
   - [X] JoinRoom + which room 
-  - [ ] PostListing
+  - [1] PostListing
+
+- Info Extraction
+  - [1] Extract Text
+  - [1] Download Image, downsample and upload to Cloudinary, Get ID 
+  - [ ] Upload 
 
 - Other
- - [ ] Downsize friendships? not so soon
- - [ ] Use cronjob to post announcement
+ - [2] Downsize friendships? not so soon
+ - [1] Use cronjob to post announcement
  - [X] Use npmjs.org/bottleneck to limit rate
+ 
+### UI
+- [2] Show QR-code
+- [2] Show List
+- [2] Show Map
+- [2] Show Detail
 
 ## MongoDB schema
 ```json5
@@ -85,9 +96,15 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
         adminId: "string",
         timestamp: "datetime",
         direct: "boolean", // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
-        causeRelatedUserId: "string",
+        causeContactId: "string",
         degreeOfExtension: "number"
       },
+    ],
+    friendship: [
+      { 
+        type:  "string",  // "friend" or "unfriend"
+        timestamp: "datetime"
+      }
     ]
   },
   

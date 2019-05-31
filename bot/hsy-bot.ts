@@ -155,22 +155,71 @@ export class HsyBot {
       'AdminBlacklist',
       async (message:Message):Promise<boolean> =>
           /^加黑 /.test(sify(message.text()))
-          && message.to().self() // talk directly to myself
+          && (Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0)  // kick within the room
           && await this.isAdmin(message.from().id) // talk is an admin
       ,
       async (message:Message, context) => {
-        // TODO impl
+        // TOTEST
+        let mentions:Contact[] = await message.mention(); // we only handle 1 blacklist at a time
+
+        if (mentions.length === 1) {
+          let degreeOfExtension = 1;
+          let now = new Date();
+          let directCauseContact = mentions[0];
+          // TOTEST
+          await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
+            {_id: directCauseContact.id},
+            {$push: {
+                blacklistedRecords:
+                  {
+                    adminId: message.from().id,
+                    timestamp: now,
+                    direct: true, // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
+                  }
+              }
+            },
+            {upsert:true});
+
+          let related = await this.getRelatedContactSet(directCauseContact.id, degreeOfExtension);
+
+          // TOTEST
+          related.forEach(async (contactId:string) => {
+            await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
+              {_id: contactId},
+              {$push: {
+                  blacklistedRecords:
+                    {
+                      adminId: message.from().id,
+                      timestamp: now,
+                      direct: false, // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
+                      causeContactId: directCauseContact.id,
+                      degreeOfExtension: degreeOfExtension
+                    }
+                }
+              },
+              {upsert:true});
+            await this.safeKickFromAllHsyRooms(contactId);
+          });
+        } else {
+          // TOTEST
+          await message.from().say(`请一次仅仅对一个黑名单进行操作`);
+        }
       }));
 
     this.chatRouter.register(new ChatRoute(
       'AdminKick',
       async (message:Message):Promise<boolean> =>
         /^踢 /.test(sify(message.text()))
-        && message.to().self()  // talk directly to myself
+        && (Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0)  // kick within the room
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
-        // TODO impl
+        // TOTEST
+        let mentions = await message.mention();
+        mentions.forEach(async (contact:Contact) => {
+          await this.safeKickFromAllHsyRooms(contact.id);
+        });
+
       }));
 
     this.chatRouter.register(new ChatRoute(
@@ -181,14 +230,22 @@ export class HsyBot {
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
-        // TODO impl
+        let content = message.text().slice(3); // anything after "公告 "
+        // TOTEST
+        await Promise.all(Object.keys(hsyRoomsIdToNameMap).map(async (roomId) => {
+          let room:Room = this.wechaty.Room.load(roomId);
+          await room.sync();
+          await this.limiter.schedule(async () => {
+            await room.say(content);
+          });
+        }));
       }));
 
     this.chatRouter.register(new ChatRoute(
       'JoinHsyRoom',
       async (message:Message) => {
         return message.to().self() &&  // only messsage to me
-          /(南湾西|南湾东|中半岛|旧金山|东湾|短租|西雅图|测试)/.test(sify(message.text()));
+          /(南湾西|南湾东|中半岛|三藩|三番|旧金山|东湾|短租|西雅图|测试)/.test(sify(message.text()));
       },
       async (message:Message, context) => {
         for (let roomId of Object.keys(hsyRoomsIdToNameMap)) {
@@ -253,6 +310,26 @@ export class HsyBot {
     }));
   }
 
+  public async getHsyRooms():Promise<Room[]> {
+    // TOTEST
+    let allRoomIds = Object.keys(hsyRoomsIdToNameMap);
+    return Promise.all(allRoomIds.map(async roomId => {
+      let room:Room = this.wechaty.Room.load(roomId);
+      await room.sync();
+      return room;
+    }));
+
+  }
+  public async safeKickFromAllHsyRooms(contactId:string) {
+    // TOTEST
+    let contact:Contact = this.wechaty.Contact.load(contactId);
+    await contact.sync();
+    let allHsyRooms:Room[] = await this.getHsyRooms();
+    await Promise.all(allHsyRooms.map(async (room) => {
+      await this.saveKickFromRoom(room, contact);
+    }));
+  };
+
   public async stop(): Promise<void> {
     return this.wechaty.stop();
   }
@@ -273,23 +350,85 @@ export class HsyBot {
       .on('message', async (message: Message) => {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
-        logger.debug(`handled message from(${message.from().id}) to(${message.to() ? message.to().id : message.room().id }) ${message} with routeName ${routeName}`);
+        logger.debug(`handled message ${JSON.stringify(message, null, 2)} with routeName ${routeName}`);
       })
       .on('friendship', async (friendship: Friendship) => {
         logger.debug(`Received friendship ${friendship}`);
         if (await this.isBlacklisted(friendship.contact().id)) {
           logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
-        }
-        else {
+        } else {
           await friendship.accept();
           logger.debug(`Accepted friendship ${friendship}`);
           await this.limiter.schedule(async () => {
             await friendship.contact().say(greetingMsg);
           });
+
+          // TOTEST
+          await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
+            {
+              _id: friendship.contact().id},
+            {
+              $push: {
+                friendship: {
+                  type: `friend`,
+                  timestamp: new Date(0)
+                }
+              }
+            },
+            {upsert: true});
         }
+
       })
-      .on('room-join', (room: Room, inviteeList: Contact[], inviter: Contact) => {
-        // TODO record who invites who and shows the message of bonus
+      .on('room-join', async (room: Room, inviteeList: Contact[], inviter: Contact) => {
+        // TOTEST record who invites who and shows the message of bonus
+        if (Object.keys(hsyRoomsIdToNameMap).indexOf(room.id) >= 0 /* belongs to Hsy*/) {
+          logger.info(`Recording room-join for ${room}, inviteeList = ${inviteeList}, inviter = ${inviter}`);
+          let now = new Date();
+          let promises = [];
+          for (let invitee of inviteeList) {
+            promises.push(await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
+              {_id: inviter.id},
+              {
+                $push: {
+                  invited: {
+                    inviteeId: invitee.id,
+                    timestamp: now,
+                    roomId: room.id
+                  }
+                }
+              },
+              {upsert: true}));
+            promises.push(await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
+              {_id: invitee.id},
+              {
+                $push: {
+                  invitedBy: {
+                    inviterId: inviter.id,
+                    timestamp: now,
+                    roomId: room.id
+                  }
+                }
+              },
+              {upsert: true}));
+            // invited: [{
+            //   inviteeId: "string",
+            //   timestamp: "datetime",
+            //   roomId: "string"
+            // }],
+            //   invitedBy: [{
+            //   inviterId: "string",
+            //   timestamp: "datetime",
+            //   roomId: "string"
+            // }],
+          }
+          await Promise.all(promises);
+          await this.limiter.schedule(async () => {
+            await room.say(
+              `欢迎${inviteeList.map((c:Contact) => c.name()).join(', ')}的加入，感谢${inviter.name()}的邀请，你们各自获得了100点的好室友点数。至于点数能做什么，敬请期待(重复邀请不重复发放)`);
+          });
+        } else {
+          logger.debug(`Ignoring room-join for ${room}, inviteeList = ${inviteeList}, inviter = ${inviter}`);
+        }
       })
       .start();
   }
@@ -315,6 +454,7 @@ export class HsyBot {
    * @param id
    */
   private async isBlacklisted(contactId:string):Promise<boolean> {
+    // TOTEST
     let contactMetas = await this.mongodb.collection(`ContactMeta`)
       .find({_id: contactId}).toArray();
     console.assert(contactMetas.length == 0 || contactMetas.length == 1,
@@ -326,9 +466,40 @@ export class HsyBot {
     return /^(招|求|介|管)-/.test(nickname);
   }
 
-  private async getRelatedUsers(id:string, degreeOfExtension:number = 0):Promise<Array<string>> {
-    // TODO impl
-    return [];
+  /**
+   * Given a doc of ContactMeta, get all 1 degree related contact ids.
+   */
+  private getRelatedContactsBySingleContactMeta(meta:any):Set<string> {
+    // TOTEST
+    let contactIds = [];
+    if (meta.invitedBy) {
+      contactIds = contactIds.concat(meta.invitedBy.map(info => info.inviterId));
+    }
+    if (meta.invited) {
+      contactIds = contactIds.concat(meta.invited.map(info => info.inviteeId));
+    }
+    return new Set(contactIds);
+  }
+  private async getRelatedContactSet(contactId:string, degreeOfExtension:number = 0):Promise<Set<string>> {
+    // TOTEST
+    let relatedSet:Set<string> = new Set([contactId]);
+    if (degreeOfExtension == 0) return relatedSet;
+
+    // Calculating locally, I know, it's very hacky. Given our users will be 10K ~ 50K in the near future, it's fine.
+
+    let allContacts = await this.mongodb.collection(`ContactMeta`).find().toArray();
+    let remainingDegree = degreeOfExtension;
+    while (remainingDegree > 0) {
+      logger.debug(`Expand another degree ${degreeOfExtension-remainingDegree}`);
+
+      // TOTEST
+      let newContactSet = new Set(allContacts
+        .filter(meta => relatedSet.has(meta._id))
+        .flatMap(meta => Array.from(this.getRelatedContactsBySingleContactMeta(meta)))
+        .filter(_contactId => !relatedSet.has(_contactId)));
+      relatedSet = new Set([...relatedSet, ...newContactSet]);
+      remainingDegree--;
+    }
   }
 
   private async saveKickFromRoom(room:Room, contact:Contact) {
@@ -358,7 +529,6 @@ export class HsyBot {
       await this.limiter.schedule(async () => {
         await room.say(`清理完毕`);
       });
-
       return true;
     }
     return false;

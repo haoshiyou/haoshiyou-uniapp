@@ -49,8 +49,8 @@ const greetingMsg = `请问你要加哪个区域的群？
   【买房】了解硅谷买房信息、加入购房群参与讨论，我们的社区老友也将为你提供服务
 `;
 
-const hikingRoomId = ""; // TODO add hikningRoomId
-const buyHouseRoomId = ""; //TODO add buyHouseRoomId
+const hikingRoomId = "6137295298@chatroom";
+const buyHouseRoomId = "5975139041@chatroom";
 
 const messageBrokerIsabella = `
 各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。

@@ -32,15 +32,15 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [X] getRelatedUsers
 
 - Room Action
-  - [X] Add to HSY Rooms
+  - [X] Add to HSY Rooms #tested
   - [X] (Safe)-kick from HSY Rooms
   - [X] Blacklist + Extend
   - [X] Kick
-  - [X] Make Room Announcement
-  - [X] (maybe)Downsize
-  - [X] Record invitation
-  - [X] Accept Friendship
-  - [X] Record Friendship
+  - [X] Make Room Announcement #tested
+  - [X] (maybe)Downsize #tested
+  - [X] Record invitation #tested
+  - [X] Accept Friendship #tested
+  - [X] Record Friendship #tested
 
 - Intention Parsing
   - [X] SeekInstruction

@@ -12,6 +12,12 @@ const log4js = require('log4js');
 const logger = log4js.getLogger();
 logger.level = 'debug';
 
+// Complaint: why do I have to do this, it should be provided by NodeJS out of box!
+process.on('unhandledRejection', (reason, p) => {
+  logger.warn('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
+
 const hsyRoomsNameToIdMap = { /*key=GroupName, value=chatroomId*/
   测试: "7046190982@chatroom",  // : "【好室友】测试群",
   西雅图: "28795198@chatroom",    // : "【好室友】西雅图租房群(试运行)",
@@ -45,12 +51,14 @@ const greetingMsg = `请问你要加哪个区域的群？
 请回复要加哪个群，例如： 南湾西
  
 另外 回复
-  【爬山】加入群主的靠谱爬山群，不定期组织湾区附近的爬山活动，认识新朋友
+  【爬山】加入群主载南的靠谱爬山群，不定期组织湾区附近的爬山活动，认识新朋友
   【买房】了解硅谷买房信息、加入购房群参与讨论，我们的社区老友也将为你提供服务
+  【载歌在谷】加入群主载南与小伙伴们共同发起的 春晚和夏季歌手赛社区 "载歌在谷"的粉丝群，接收活动动态
 `;
 
 const hikingRoomId = "6137295298@chatroom";
 const buyHouseRoomId = "5975139041@chatroom";
+const zgzgRoomId = "26306003878@chatroom";
 
 const messageBrokerIsabella = `
 各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。
@@ -235,7 +243,6 @@ export class HsyBot {
       ,
       async (message:Message, context) => {
         let content = message.text().slice(3); // anything after "公告 "
-        // TOTEST
         await Promise.all(Object.keys(hsyRoomsIdToNameMap).map(async (roomId) => {
           let room:Room = this.wechaty.Room.load(roomId);
           await room.sync();
@@ -284,6 +291,22 @@ export class HsyBot {
       }));
 
     this.chatRouter.register(new ChatRoute(
+      'ZGZG',
+      async (message:Message) => {
+        return message.to().self() && /载歌在谷/.test(sify(message.text()));
+      },
+      async (message:Message, context) => {
+        await this.limiter.schedule(async () => {
+          await message.from().say(`欢迎加入群主参与发起的的另一个社区：载歌在谷™ 社区的粉丝群，将不定期发布载歌在谷相关信息。`);        await message.from().say(`欢迎加入`);
+        });
+        let room = this.wechaty.Room.load(zgzgRoomId);
+        await room.sync();
+        await this.limiter.schedule(async () => {
+          await room.add(message.from());
+        });
+      }));
+
+    this.chatRouter.register(new ChatRoute(
       'BuyHouse',
       async (message:Message) => {
         return message.to().self() && /买房|购房/.test(sify(message.text()));
@@ -321,21 +344,30 @@ export class HsyBot {
         Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
         message.type() === MessageType.Text,
       async (message:Message, context) => {
-        let filebox = await message.toFileBox();
-        let imageId = await this.uploadImage(filebox);
+        // let filebox = await message.toFileBox();
+        // let imageId = await this.uploadImage(filebox);
 
-        // TOTEST
+        let now = new Date();
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
           {
             $push: {
-              imageIds: imageId,
+              rawHistory: {
+                text: message.text(),
+                fromId: message.from().id,
+                toId: message.to().id,
+                roomId: message.room().id, // assuming it's a room
+                timestamp: now
+              }
             },
             $set: {
-              updated: new Date(), // TOTEST
+              content: message.text(),
+              updated: now, // TOTEST
             },
             $setOnInsert: {
-              status: "active", // TOTEST
+
+              created: now,
+              status: "active",
             }
           },
           {upsert:true});
@@ -626,7 +658,8 @@ export class HsyBot {
   public async uploadImage(filebox:FileBox):Promise<string> {
     // TOTEST
     let filename = `/tmp/file`;
-    await filebox.toFile(filename);
+    // TODO warn there might be racing condition. Alternatively we can use a UUID.
+    await filebox.toFile(filename, true);
     let res = await cloudinary.v2.uploader.upload(filename, {
       transformation: [
         {quality:`auto:eco`, crop:`limit`, width: `1080`, height: `4000`}

@@ -82,3 +82,11 @@ dist
 
 # Service worker
 sw.*
+
+// Compile
+components/*.js
+components/*.js.map
+layouts/*.js
+layouts/*.js.map
+pages/*.js
+pages/*.js.map

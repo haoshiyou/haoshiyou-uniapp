@@ -1,11 +1,13 @@
 import {Contact, Friendship, Message, Room, Wechaty} from 'wechaty';
+import {FileBox} from "file-box";
 import {ContactSelf} from "wechaty/dist/src/user";
 import {ChatRoute, ChatRouter} from "./chat-router";
 import {sify} from 'chinese-conv';
 import Bottleneck from "bottleneck";
-import {ContactType} from "wechaty-puppet";
+import {ContactType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 
+const cloudinary = require('cloudinary');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 logger.level = 'debug';
@@ -135,13 +137,15 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'Ignore',
       async (message:Message) => {
-        if (message.from().id === this.wechaty.id) {
+        if (message.from().self()) {
           return true; // yes ignore message from myselfs
-        } else if (message.room() // it's a room TODO test it
+        } else if (message.room() // it's a room TOTEST
           && Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) < 0 // and it is not a HsyRoom
         ) {
           return true; // yes, ignore message to unrelated room.
         } else if (message.from().type() !== ContactType.Personal) {
+          return true; // yes, ignore message from not personal contacts
+        } else if (message.type() !== MessageType.Text && message.type() !== MessageType.Image) {
           return true; // yes, ignore message from not personal contacts
         }
         else return false;
@@ -300,14 +304,95 @@ export class HsyBot {
 
     this.chatRouter.register(new ChatRoute(
       'SeekInstructions',
-      async (message:Message) => {
-        return message.to().self() && /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text()));
-    },
+      async (message:Message) =>
+        message.to().self() &&
+        /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text())) &&
+        message.text().length < 8
+    ,
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
           await message.from().say(greetingMsg);
         });
     }));
+    this.chatRouter.register(new ChatRoute(
+      'PostListing',
+      async (message:Message) =>
+        message.room() &&
+        Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+        message.type() === MessageType.Text,
+      async (message:Message, context) => {
+        let filebox = await message.toFileBox();
+        let imageId = await this.uploadImage(filebox);
+
+        // TOTEST
+        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
+          {_id: `wxId:${message.from().id}`},
+          {
+            $push: {
+              imageIds: imageId,
+            },
+            $set: {
+              updated: new Date(), // TOTEST
+            },
+            $setOnInsert: {
+              status: "active", // TOTEST
+            }
+          },
+          {upsert:true});
+      }));
+    this.chatRouter.register(new ChatRoute(
+      'PostImage',
+      async (message:Message) =>
+        message.room() &&
+        Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+        message.type() === MessageType.Image,
+      async (message:Message, context) => {
+        let filebox = await message.toFileBox();
+        let imageId = await this.uploadImage(filebox);
+
+        // TOTEST
+        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
+          {_id: `wxId:${message.from().id}`},
+          {
+            $push: {
+              imageIds: imageId,
+            },
+            $set: {
+              updated: new Date(), // TOTEST
+            },
+            $setOnInsert: {
+              status: "active", // TOTEST
+            }
+          },
+          {upsert:true});
+      }));
+
+    this.chatRouter.register(new ChatRoute(
+      'PostImage',
+      async (message:Message) =>
+        message.room() &&
+        Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+        message.type() === MessageType.Image,
+      async (message:Message, context) => {
+        let filebox = await message.toFileBox();
+        let imageId = await this.uploadImage(filebox);
+
+        // TOTEST
+        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
+          {_id: `wxId:${message.from().id}`},
+          {
+            $push: {
+              imageIds: imageId,
+            },
+            $set: {
+              updated: new Date(), // TOTEST
+            },
+            $setOnInsert: {
+              status: "active", // TOTEST
+            }
+          },
+          {upsert:true});
+      }));
   }
 
   public async getHsyRooms():Promise<Room[]> {
@@ -377,7 +462,6 @@ export class HsyBot {
             },
             {upsert: true});
         }
-
       })
       .on('room-join', async (room: Room, inviteeList: Contact[], inviter: Contact) => {
         // TOTEST record who invites who and shows the message of bonus
@@ -532,6 +616,24 @@ export class HsyBot {
       return true;
     }
     return false;
+  }
+
+  /**
+   *
+   * @param filebox
+   * @returns string of public Id from Cloudinary Image
+   */
+  public async uploadImage(filebox:FileBox):Promise<string> {
+    // TOTEST
+    let filename = `/tmp/file`;
+    await filebox.toFile(filename);
+    let res = await cloudinary.v2.uploader.upload(filename, {
+      transformation: [
+        {quality:`auto:eco`, crop:`limit`, width: `1080`, height: `4000`}
+      ],
+      format: 'jpg'
+    });
+    return res.publicId;
   }
 
 }

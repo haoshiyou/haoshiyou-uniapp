@@ -12,6 +12,7 @@ const chat_router_1 = require("./chat-router");
 const chinese_conv_1 = require("chinese-conv");
 const bottleneck_1 = require("bottleneck");
 const wechaty_puppet_1 = require("wechaty-puppet");
+const cloudinary = require('cloudinary');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 logger.level = 'debug';
@@ -123,15 +124,18 @@ class HsyBot {
         this.chatRouter = new chat_router_1.ChatRouter();
         this.mongodb = mongodb;
         this.chatRouter.register(new chat_router_1.ChatRoute('Ignore', (message) => __awaiter(this, void 0, void 0, function* () {
-            if (message.from().id === this.wechaty.id) {
+            if (message.from().self()) {
                 return true; // yes ignore message from myselfs
             }
-            else if (message.room() // it's a room TODO test it
+            else if (message.room() // it's a room TOTEST
                 && Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) < 0 // and it is not a HsyRoom
             ) {
                 return true; // yes, ignore message to unrelated room.
             }
             else if (message.from().type() !== wechaty_puppet_1.ContactType.Personal) {
+                return true; // yes, ignore message from not personal contacts
+            }
+            else if (message.type() !== wechaty_puppet_1.MessageType.Text && message.type() !== wechaty_puppet_1.MessageType.Image) {
                 return true; // yes, ignore message from not personal contacts
             }
             else
@@ -255,11 +259,73 @@ class HsyBot {
             }));
         })));
         this.chatRouter.register(new chat_router_1.ChatRoute('SeekInstructions', (message) => __awaiter(this, void 0, void 0, function* () {
-            return message.to().self() && /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(chinese_conv_1.sify(message.text()));
+            return message.to().self() &&
+                /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(chinese_conv_1.sify(message.text())) &&
+                message.text().length < 8;
         }), (message, context) => __awaiter(this, void 0, void 0, function* () {
             yield this.limiter.schedule(() => __awaiter(this, void 0, void 0, function* () {
                 yield message.from().say(greetingMsg);
             }));
+        })));
+        this.chatRouter.register(new chat_router_1.ChatRoute('PostListing', (message) => __awaiter(this, void 0, void 0, function* () {
+            return message.room() &&
+                Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+                message.type() === wechaty_puppet_1.MessageType.Text;
+        }), (message, context) => __awaiter(this, void 0, void 0, function* () {
+            let filebox = yield message.toFileBox();
+            let imageId = yield this.uploadImage(filebox);
+            // TOTEST
+            yield this.mongodb.collection(`HsyListing`).findOneAndUpdate({ _id: `wxId:${message.from().id}` }, {
+                $push: {
+                    imageIds: imageId,
+                },
+                $set: {
+                    updated: new Date(),
+                },
+                $setOnInsert: {
+                    status: "active",
+                }
+            }, { upsert: true });
+        })));
+        this.chatRouter.register(new chat_router_1.ChatRoute('PostImage', (message) => __awaiter(this, void 0, void 0, function* () {
+            return message.room() &&
+                Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+                message.type() === wechaty_puppet_1.MessageType.Image;
+        }), (message, context) => __awaiter(this, void 0, void 0, function* () {
+            let filebox = yield message.toFileBox();
+            let imageId = yield this.uploadImage(filebox);
+            // TOTEST
+            yield this.mongodb.collection(`HsyListing`).findOneAndUpdate({ _id: `wxId:${message.from().id}` }, {
+                $push: {
+                    imageIds: imageId,
+                },
+                $set: {
+                    updated: new Date(),
+                },
+                $setOnInsert: {
+                    status: "active",
+                }
+            }, { upsert: true });
+        })));
+        this.chatRouter.register(new chat_router_1.ChatRoute('PostImage', (message) => __awaiter(this, void 0, void 0, function* () {
+            return message.room() &&
+                Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
+                message.type() === wechaty_puppet_1.MessageType.Image;
+        }), (message, context) => __awaiter(this, void 0, void 0, function* () {
+            let filebox = yield message.toFileBox();
+            let imageId = yield this.uploadImage(filebox);
+            // TOTEST
+            yield this.mongodb.collection(`HsyListing`).findOneAndUpdate({ _id: `wxId:${message.from().id}` }, {
+                $push: {
+                    imageIds: imageId,
+                },
+                $set: {
+                    updated: new Date(),
+                },
+                $setOnInsert: {
+                    status: "active",
+                }
+            }, { upsert: true });
         })));
     }
     getHsyRooms() {
@@ -478,6 +544,25 @@ class HsyBot {
                 return true;
             }
             return false;
+        });
+    }
+    /**
+     *
+     * @param filebox
+     * @returns string of public Id from Cloudinary Image
+     */
+    uploadImage(filebox) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // TOTEST
+            let filename = `/tmp/file`;
+            yield filebox.toFile(filename);
+            let res = yield cloudinary.v2.uploader.upload(filename, {
+                transformation: [
+                    { quality: `auto:eco`, crop: `limit`, width: `1080`, height: `4000` }
+                ],
+                format: 'jpg'
+            });
+            return res.publicId;
         });
     }
 }

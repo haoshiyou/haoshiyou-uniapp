@@ -50,7 +50,6 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 - Info Extraction
   - [1] Extract Text
   - [1] Download Image, downsample and upload to Cloudinary, Get ID 
-  - [ ] Upload 
 
 - Other
  - [2] Downsize friendships? not so soon
@@ -102,7 +101,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
     ],
     friendship: [
       { 
-        type:  "string",  // "friend" or "unfriend"
+        type:  "Enum<string>",  // {"friend", "unfriend"}
         timestamp: "datetime"
       }
     ]
@@ -111,6 +110,26 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   // ContactMeta
   Contact: {
     _id: "contact.id"
+  },
+  
+  // HsyListing
+  HsyListing: {
+    _id: "type:contact.id", // e.g. wxId:wxid_wl56wlfbwn512
+    imageIds: "string",
+    idType: "Enum<string>",  // {wxId, wxNick}
+    content: "string",
+    title: "string",
+    price: "string",
+    updated: "datetime",
+    status: "Enum<string>", // {active, inactive, deleted}
+    location: {
+      address: "string",
+      zipcode: "string",
+      city: "string",
+      state: "string",
+      lat: "number",
+      lng: "number",
+    },
   }
 }
 

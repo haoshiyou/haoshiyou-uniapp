@@ -182,7 +182,7 @@ export class HsyBot {
           let degreeOfExtension = 1;
           let now = new Date();
           let directCauseContact = mentions[0];
-         
+
           // TOTEST
           await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
             {_id: directCauseContact.id},

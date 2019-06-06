@@ -105,7 +105,7 @@ const HARDCODED_ADMINS = [
   "adamzhu1986", // 朱旭东
   "wxid_9i3qe4iaistq22", // haoshiyou-bot
   "wxid_mp4e78qq2fl222", // 助理载
-  "wxid_mqu5m5dvx9i822", // 非高仿
+  //"wxid_mqu5m5dvx9i822", // 非高仿
   "a38372624", // WilliamChen
   "angela0622sx", // 雷梦雪
   "wxid_zvjlfty9zs7f11", // KittyHe
@@ -147,7 +147,7 @@ export class HsyBot {
       async (message:Message) => {
         if (message.from().self()) {
           return true; // yes ignore message from myselfs
-        } else if (message.room() // it's a room TOTEST
+        } else if (message.room() // it's a room
           && Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) < 0 // and it is not a HsyRoom
         ) {
           return true; // yes, ignore message to unrelated room.
@@ -166,18 +166,23 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'AdminBlacklist',
       async (message:Message):Promise<boolean> =>
-          /^加黑 /.test(sify(message.text()))
-          && (Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0)  // kick within the room
-          && await this.isAdmin(message.from().id) // talk is an admin
+          /加黑/.test(sify(message.text())) &&
+          message.text().length <= 40 &&
+          (Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0) && // kick within the room
+          await this.isAdmin(message.from().id) // talk is an admin
       ,
       async (message:Message, context) => {
-        // TOTEST
+
+        await this.limiter.schedule(async () => {
+          await message.room().say(`收到管理员的管理指令...`);
+        });
         let mentions:Contact[] = await message.mention(); // we only handle 1 blacklist at a time
 
         if (mentions.length === 1) {
           let degreeOfExtension = 1;
           let now = new Date();
           let directCauseContact = mentions[0];
+         
           // TOTEST
           await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
             {_id: directCauseContact.id},
@@ -221,12 +226,16 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'AdminKick',
       async (message:Message):Promise<boolean> =>
-        /^踢 /.test(sify(message.text()))
+        /踢/.test(sify(message.text()))
+        && message.text().length <= 40
         && (Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0)  // kick within the room
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
         // TOTEST
+        await this.limiter.schedule(async () => {
+          await message.room().say(`收到管理员的管理指令...`);
+        });
         let mentions = await message.mention();
         mentions.forEach(async (contact:Contact) => {
           await this.safeKickFromAllHsyRooms(contact.id);
@@ -293,7 +302,7 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'ZGZG',
       async (message:Message) => {
-        return message.to().self() && /载歌在谷/.test(sify(message.text()));
+        return message.to().self() && /载歌在谷/.test(sify(message.text())) && message.text().length <= 8;
       },
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
@@ -309,7 +318,7 @@ export class HsyBot {
     this.chatRouter.register(new ChatRoute(
       'BuyHouse',
       async (message:Message) => {
-        return message.to().self() && /买房|购房/.test(sify(message.text()));
+        return message.to().self() && /买房|购房/.test(sify(message.text())) && message.text().length <= 8;
       },
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
@@ -329,7 +338,7 @@ export class HsyBot {
       'SeekInstructions',
       async (message:Message) =>
         message.to().self() &&
-        /租|加|求|租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text())) &&
+        /租|加|求|請問|请问|好室友|hi|hello|您好|你好|喂/.test(sify(message.text().toLowerCase())) &&
         message.text().length < 8
     ,
       async (message:Message, context) => {
@@ -342,10 +351,10 @@ export class HsyBot {
       async (message:Message) =>
         message.room() &&
         Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
-        message.type() === MessageType.Text,
+        message.type() === MessageType.Text &&
+        message.text().length >= 12 &&
+        /招|租|加|求|房|house|apt|rent|/.test(sify(message.text().toLowerCase())),
       async (message:Message, context) => {
-        // let filebox = await message.toFileBox();
-        // let imageId = await this.uploadImage(filebox);
 
         let now = new Date();
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
@@ -362,7 +371,7 @@ export class HsyBot {
             },
             $set: {
               content: message.text(),
-              updated: now, // TOTEST
+              updated: now,
             },
             $setOnInsert: {
 
@@ -372,33 +381,6 @@ export class HsyBot {
           },
           {upsert:true});
       }));
-    this.chatRouter.register(new ChatRoute(
-      'PostImage',
-      async (message:Message) =>
-        message.room() &&
-        Object.keys(hsyRoomsIdToNameMap).indexOf(message.room().id) >= 0 && // must be in a HSY room
-        message.type() === MessageType.Image,
-      async (message:Message, context) => {
-        let filebox = await message.toFileBox();
-        let imageId = await this.uploadImage(filebox);
-
-        // TOTEST
-        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
-          {_id: `wxId:${message.from().id}`},
-          {
-            $push: {
-              imageIds: imageId,
-            },
-            $set: {
-              updated: new Date(), // TOTEST
-            },
-            $setOnInsert: {
-              status: "active", // TOTEST
-            }
-          },
-          {upsert:true});
-      }));
-
     this.chatRouter.register(new ChatRoute(
       'PostImage',
       async (message:Message) =>
@@ -438,6 +420,7 @@ export class HsyBot {
 
   }
   public async safeKickFromAllHsyRooms(contactId:string) {
+    logger.info(`safeKickFromAllHsyRooms ${contactId}`);
     // TOTEST
     let contact:Contact = this.wechaty.Contact.load(contactId);
     await contact.sync();
@@ -616,15 +599,24 @@ export class HsyBot {
       relatedSet = new Set([...relatedSet, ...newContactSet]);
       remainingDegree--;
     }
+    logger.info(`relatedSet = `, relatedSet);
+    return relatedSet;
   }
 
   private async saveKickFromRoom(room:Room, contact:Contact) {
+    logger.debug(`saveKickFromRoom contact.self() =`, contact.self());
+    logger.debug(`saveKickFromRoom this.isAdmin(contact.id) =`, this.isAdmin(contact.id));
+    logger.debug(`saveKickFromRoom this.isWhitelistedNonAdmin(contact.id) =`, this.isWhitelistedNonAdmin(contact.id));
+
     if (contact.self() || this.isAdmin(contact.id) || this.isWhitelistedNonAdmin(contact.id)) {
       logger.warn(`trying to safe kick a contact ${contact} from room ${room}, but ignored`);
-    } else {
+    } else if (room.has(contact)) {
       await this.limiter.schedule(async () => {
+        await room.say(`本助手 奉命把 ${contact.name()} 请出本群...`);
         await room.del(contact);
       });
+    } else {
+      logger.debug(`saveKickFromRoom ignore room ${JSON.stringify(room, null, 2)} doesn't contain ${JSON.stringify(contact, null, 2)}`);
     }
   }
 

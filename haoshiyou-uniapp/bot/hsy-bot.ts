@@ -171,7 +171,7 @@ export class HsyBot {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     });
-    this.startJobDaily();
+    // this.startJobDaily();
 
     this.wechaty = wechaty;
     this.chatRouter = new ChatRouter();
@@ -452,8 +452,8 @@ export class HsyBot {
       await room.sync();
       return room;
     }));
-
   }
+
   public async safeKickFromAllHsyRooms(contactId:string) {
     logger.info(`safeKickFromAllHsyRooms ${contactId}`);
     let contact:Contact = this.wechaty.Contact.load(contactId);
@@ -652,7 +652,7 @@ export class HsyBot {
       logger.warn(`trying to safe kick a contact ${contact} from room ${room}, but ignored`);
     } else if (room.has(contact)) {
       await this.limiter.schedule(async () => {
-        await room.say(`本助手 奉命把 ${contact.name()} 请出本群...`);
+        // await room.say(`本助手 奉命把 ${contact.name()} 请出本群...`);
         await room.del(contact);
       });
     } else {
@@ -724,34 +724,34 @@ export class HsyBot {
 
   }
 
-  private hsyGroupNickNameMsgCronJobDebug: any =
-      new cron.CronJob("1/5 * * * * *", async () => {
-        logger.info("Cronjob debug: every 5 seconds");
-        for (const roomId in { "7046190982@chatroom": "测试" }) {
-          let room = this.wechaty.Room.load(roomId);
-          await room.sync();
-          await room.say(hsyNickAnnouncement);
-        }
-      }, null, true, "America/Los_Angeles");
+  // private hsyGroupNickNameMsgCronJobDebug: any =
+  //     new cron.CronJob("1/5 * * * * *", async () => {
+  //       logger.info("Cronjob debug: every 5 seconds");
+  //       for (const roomId in { "7046190982@chatroom": "测试" }) {
+  //         let room = this.wechaty.Room.load(roomId);
+  //         await room.sync();
+  //         await room.say(hsyNickAnnouncement);
+  //       }
+  //     }, null, true, "America/Los_Angeles");
 
-  private hsyGroupNickNameMsgCronJob =
-      new cron.CronJob("0 51 21 * * *", async () => {
-        logger.info("Deliver daily message");
-        // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
-        for (const roomId in hsyRoomsIdToNameMap) {
-          let room = this.wechaty.Room.load(roomId);
-          await room.sync();
-          await room.say(hsyNickAnnouncement);
-        }
-      }, null, true, "America/Los_Angeles");
-
-  // private startJobDebug() {
-  //   console.log(`Start jobDebug`);
-  //   this.hsyGroupNickNameMsgCronJobDebug.start();
+  // private hsyGroupNickNameMsgCronJob =
+  //     new cron.CronJob("0 51 21 * * *", async () => {
+  //       logger.info("Deliver daily message");
+  //       // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
+  //       for (const roomId in hsyRoomsIdToNameMap) {
+  //         let room = this.wechaty.Room.load(roomId);
+  //         await room.sync();
+  //         await room.say(hsyNickAnnouncement);
+  //       }
+  //     }, null, true, "America/Los_Angeles");
+  //
+  // // private startJobDebug() {
+  // //   console.log(`Start jobDebug`);
+  // //   this.hsyGroupNickNameMsgCronJobDebug.start();
+  // // }
+  //
+  // private startJobDaily() {
+  //   logger.info(`Start job daily`);
+  //   this.hsyGroupNickNameMsgCronJob.start();
   // }
-
-  private startJobDaily() {
-    logger.info(`Start job daily`);
-    this.hsyGroupNickNameMsgCronJob.start();
-  }
 }

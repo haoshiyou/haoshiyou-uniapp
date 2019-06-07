@@ -77,12 +77,17 @@ dist
 # Serverless directories
 .serverless
 
-# IDE / Editor
+# IDE
 .idea
-.editorconfig
 
 # Service worker
 sw.*
 
-# Mac OSX
-.DS_Store
+// Compile
+components/*.js
+components/*.js.map
+layouts/*.js
+layouts/*.js.map
+pages/*.js
+pages/*.js.map
+/tmp

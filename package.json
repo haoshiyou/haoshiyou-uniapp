@@ -1,13 +1,13 @@
 {
   "name": "haoshiyou-uniapp",
-  "version": "1.0.0",
+  "version": "1.1.0beta",
   "description": "a project for haoshiyou uniapp",
   "author": "Zainan Victor Zhou",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon server/index.js --watch server",
+    "dev": "cross-env NODE_ENV=development nodemon server/index.ts --watch server",
     "build": "nuxt build",
-    "start": "cross-env NODE_ENV=production node server/index.js",
+    "start": "cross-env NODE_ENV=production ts-node server/index.ts",
     "bot": "npx ts-node bot/main.ts",
     "generate": "nuxt generate",
     "test": "ava"
@@ -34,6 +34,7 @@
     "wechaty-puppet-padpro": "^0.2.1"
   },
   "devDependencies": {
+    "@nuxt/typescript": "^2.8.1",
     "@types/mongodb": "^3.1.27",
     "@types/node": "^12.0.4",
     "@vue/test-utils": "^1.0.0-beta.27",

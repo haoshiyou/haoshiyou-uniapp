@@ -48,19 +48,21 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [X] PostListing
 
 - Info Extraction
-  - [1] Extract Text with haoshiyou-ai
+  - [3] Extract Text with haoshiyou-ai
   - [X] Download Image, downsample and upload to Cloudinary, Get ID #tested
 
 - Other
- - [2] Downsize friendships? not so soon
+ - [3] Downsize friendships? not so soon
  - [X] Use cronjob to post announcement
  - [X] Use npmjs.org/bottleneck to limit rate
  
 ### UI
-- [2] Show QR-code
-- [2] Show List
-- [2] Show Map
-- [2] Show Detail
+- [1] Launch bot from server
+- [1] Show QR-code
+- [1] Show List
+- [1] Show Map
+- [1] Show Detail
+- [2] Bot status page behind admin
 
 ## MongoDB schema
 ```json5

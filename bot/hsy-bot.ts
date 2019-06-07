@@ -12,7 +12,6 @@ const cloudinary = require('cloudinary');
 
 const log4js = require('log4js');
 const logger = log4js.getLogger();
-const DB_COLLECTION_ContactMeta = `ContactMeta`;
 logger.level = 'debug';
 
 // Complaint: why do I have to do this, it should be provided by NodeJS out of box!
@@ -21,6 +20,7 @@ process.on('unhandledRejection', (reason, p) => {
   // application specific logging, throwing an error, or other logic here
 });
 
+const DB_COLLECTION_ContactMeta = `ContactMeta`;
 const hsyRoomsNameToIdMap = { /*key=GroupName, value=chatroomId*/
   测试: "7046190982@chatroom",  // : "【好室友】测试群",
   西雅图: "28795198@chatroom",    // : "【好室友】西雅图租房群(试运行)",
@@ -735,7 +735,7 @@ export class HsyBot {
       }, null, true, "America/Los_Angeles");
 
   private hsyGroupNickNameMsgCronJob =
-      new cron.CronJob("0 35 21 * * *", async () => {
+      new cron.CronJob("0 51 21 * * *", async () => {
         logger.info("Deliver daily message");
         // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
         for (const roomId in hsyRoomsIdToNameMap) {
@@ -745,10 +745,10 @@ export class HsyBot {
         }
       }, null, true, "America/Los_Angeles");
 
-  private startJobDebug() {
-    console.log(`Start jobDebug`);
-    this.hsyGroupNickNameMsgCronJobDebug.start();
-  }
+  // private startJobDebug() {
+  //   console.log(`Start jobDebug`);
+  //   this.hsyGroupNickNameMsgCronJobDebug.start();
+  // }
 
   private startJobDaily() {
     logger.info(`Start job daily`);

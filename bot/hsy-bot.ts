@@ -667,6 +667,7 @@ export class HsyBot {
     }
     return false;
   }
+
   /**
    *
    * @param filebox
@@ -686,8 +687,13 @@ export class HsyBot {
         ],
         format: 'jpg'
       }).then((res) => {
-          logger.info(`uploadImage done with cloudinary, res = ${JSON.stringify(res, null, 2)}`);
-          resolve(res.public_id); // TODO future feature we can use etag instead of public_id to downsize our cloudinary storage and avoid duplicates
+        logger.info(`uploadImage done with cloudinary, res = ${JSON.stringify(res, null, 2)}`);
+        let publicId = res['public_id'];
+        let etag = res['etag'];
+        return cloudinary.v2.uploader.rename(publicId, `etag:${etag}`, {overwrite: true});
+      }).then(res => {
+        logger.info(`rename done with cloudinary, res = ${JSON.stringify(res, null, 2)}`);
+        resolve(res.public_id);
       }).catch(err => reject(err));
     });
 

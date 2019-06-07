@@ -8,8 +8,10 @@ import {ContactType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 
 const cloudinary = require('cloudinary');
+
 const log4js = require('log4js');
 const logger = log4js.getLogger();
+const DB_COLLECTION_ContactMeta = `ContactMeta`;
 logger.level = 'debug';
 
 // Complaint: why do I have to do this, it should be provided by NodeJS out of box!
@@ -59,6 +61,7 @@ const greetingMsg = `请问你要加哪个区域的群？
 const hikingRoomId = "6137295298@chatroom";
 const buyHouseRoomId = "5975139041@chatroom";
 const zgzgRoomId = "26306003878@chatroom";
+const botNotifyRoomId = "27492303909@chatroom";
 
 const messageBrokerIsabella = `
 各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。
@@ -105,7 +108,7 @@ const HARDCODED_ADMINS = [
   "adamzhu1986", // 朱旭东
   "wxid_9i3qe4iaistq22", // haoshiyou-bot
   "wxid_mp4e78qq2fl222", // 助理载
-  //"wxid_mqu5m5dvx9i822", // 非高仿
+  "wxid_mqu5m5dvx9i822", // 非高仿
   "a38372624", // WilliamChen
   "angela0622sx", // 雷梦雪
   "wxid_zvjlfty9zs7f11", // KittyHe
@@ -134,11 +137,18 @@ export class HsyBot {
   private qrcode: string;
   private chatRouter:ChatRouter;
   private mongodb:Db;
+
   private limiter = new Bottleneck({
     minTime: 1500
   });
 
   constructor(wechaty:Wechaty, mongodb:Db) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+
     this.wechaty = wechaty;
     this.chatRouter = new ChatRouter();
     this.mongodb = mongodb;
@@ -183,8 +193,7 @@ export class HsyBot {
           let now = new Date();
           let directCauseContact = mentions[0];
 
-          // TOTEST
-          await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
+          await this.mongodb.collection(DB_COLLECTION_ContactMeta).findOneAndUpdate(
             {_id: directCauseContact.id},
             {$push: {
                 blacklistedRecords:
@@ -199,26 +208,28 @@ export class HsyBot {
 
           let related = await this.getRelatedContactSet(directCauseContact.id, degreeOfExtension);
 
-          // TOTEST
-          related.forEach(async (contactId:string) => {
-            await this.mongodb.collection(`CollectionMeta`).findOneAndUpdate(
-              {_id: contactId},
-              {$push: {
-                  blacklistedRecords:
-                    {
-                      adminId: message.from().id,
-                      timestamp: now,
-                      direct: false, // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
-                      causeContactId: directCauseContact.id,
-                      degreeOfExtension: degreeOfExtension
+          related
+              .forEach(async (contactId:string) => {
+            if (contactId != directCauseContact.id) { // TODO change to filter to improve readability.
+              await this.mongodb.collection(DB_COLLECTION_ContactMeta).findOneAndUpdate(
+                  {_id: contactId},
+                  {
+                    $push: {
+                      blacklistedRecords:
+                          {
+                            adminId: message.from().id,
+                            timestamp: now,
+                            direct: false, // true for direct blacklist, false for indirect blacklist (caused by related user being blacklisted)
+                            causeContactId: directCauseContact.id,
+                            degreeOfExtension: degreeOfExtension
+                          }
                     }
-                }
-              },
-              {upsert:true});
-            await this.safeKickFromAllHsyRooms(contactId);
+                  },
+                  {upsert: true});
+              await this.safeKickFromAllHsyRooms(contactId);
+            }
           });
         } else {
-          // TOTEST
           await message.from().say(`请一次仅仅对一个黑名单进行操作`);
         }
       }));
@@ -232,9 +243,9 @@ export class HsyBot {
         && await this.isAdmin(message.from().id) // talk is an admin,
       ,
       async (message:Message, context) => {
-        // TOTEST
         await this.limiter.schedule(async () => {
-          await message.room().say(`收到管理员的管理指令...`);
+          await message.from().say(`收到踢人指令`);
+          await message.room().say(`遵命，管理员！`);
         });
         let mentions = await message.mention();
         mentions.forEach(async (contact:Contact) => {
@@ -322,6 +333,8 @@ export class HsyBot {
       },
       async (message:Message, context) => {
         await this.limiter.schedule(async () => {
+          let botNotifyRoom = this.wechaty.Room.load(botNotifyRoomId);
+          await botNotifyRoom.say(`${message.from()}(${message.room().id})申请加入了买房群。`);
           await message.from().say(messageBrokerIsabella);
           await message.from().say(messageBrokerIsabellaRefer);
         });
@@ -391,7 +404,6 @@ export class HsyBot {
         let filebox = await message.toFileBox();
         let imageId = await this.uploadImage(filebox);
 
-        // TOTEST
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
           {
@@ -399,10 +411,10 @@ export class HsyBot {
               imageIds: imageId,
             },
             $set: {
-              updated: new Date(), // TOTEST
+              updated: new Date(),
             },
             $setOnInsert: {
-              status: "active", // TOTEST
+              status: "active",
             }
           },
           {upsert:true});
@@ -410,7 +422,6 @@ export class HsyBot {
   }
 
   public async getHsyRooms():Promise<Room[]> {
-    // TOTEST
     let allRoomIds = Object.keys(hsyRoomsIdToNameMap);
     return Promise.all(allRoomIds.map(async roomId => {
       let room:Room = this.wechaty.Room.load(roomId);
@@ -421,7 +432,6 @@ export class HsyBot {
   }
   public async safeKickFromAllHsyRooms(contactId:string) {
     logger.info(`safeKickFromAllHsyRooms ${contactId}`);
-    // TOTEST
     let contact:Contact = this.wechaty.Contact.load(contactId);
     await contact.sync();
     let allHsyRooms:Room[] = await this.getHsyRooms();
@@ -454,16 +464,24 @@ export class HsyBot {
       })
       .on('friendship', async (friendship: Friendship) => {
         logger.debug(`Received friendship ${friendship}`);
+
+        let botNotifyRoom = this.wechaty.Room.load(botNotifyRoomId);
+        await botNotifyRoom.say(`收到来自${friendship.contact()}(${friendship.contact().id})的加好友请求`);
         if (await this.isBlacklisted(friendship.contact().id)) {
           logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
         } else {
-          await friendship.accept();
+          await this.limiter.schedule(async () => {
+            await friendship.contact().say(`好的，欢迎使用好室友，万一机器人好友加满无法接受新好友，请联系群主 微信号:xinbenlv`);
+            await botNotifyRoom.say(`尝试接受好友...`);
+            await friendship.accept();
+            await botNotifyRoom.say(`接受好友成功`);
+          });
+
           logger.debug(`Accepted friendship ${friendship}`);
           await this.limiter.schedule(async () => {
             await friendship.contact().say(greetingMsg);
           });
 
-          // TOTEST
           await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
             {
               _id: friendship.contact().id},
@@ -471,7 +489,7 @@ export class HsyBot {
               $push: {
                 friendship: {
                   type: `friend`,
-                  timestamp: new Date(0)
+                  timestamp: new Date()
                 }
               }
             },
@@ -479,7 +497,6 @@ export class HsyBot {
         }
       })
       .on('room-join', async (room: Room, inviteeList: Contact[], inviter: Contact) => {
-        // TOTEST record who invites who and shows the message of bonus
         if (Object.keys(hsyRoomsIdToNameMap).indexOf(room.id) >= 0 /* belongs to Hsy*/) {
           logger.info(`Recording room-join for ${room}, inviteeList = ${inviteeList}, inviter = ${inviter}`);
           let now = new Date();
@@ -553,7 +570,7 @@ export class HsyBot {
    * @param id
    */
   private async isBlacklisted(contactId:string):Promise<boolean> {
-    // TOTEST
+    // TOTEST is blacklisted
     let contactMetas = await this.mongodb.collection(`ContactMeta`)
       .find({_id: contactId}).toArray();
     console.assert(contactMetas.length == 0 || contactMetas.length == 1,
@@ -569,7 +586,7 @@ export class HsyBot {
    * Given a doc of ContactMeta, get all 1 degree related contact ids.
    */
   private getRelatedContactsBySingleContactMeta(meta:any):Set<string> {
-    // TOTEST
+    // TODO getRelatedContactsBySingleContactMeta  when there is a severe blacklist case
     let contactIds = [];
     if (meta.invitedBy) {
       contactIds = contactIds.concat(meta.invitedBy.map(info => info.inviterId));
@@ -580,7 +597,7 @@ export class HsyBot {
     return new Set(contactIds);
   }
   private async getRelatedContactSet(contactId:string, degreeOfExtension:number = 0):Promise<Set<string>> {
-    // TOTEST
+    // TODO check getRelatedContactSet when there is a severe blacklist case
     let relatedSet:Set<string> = new Set([contactId]);
     if (degreeOfExtension == 0) return relatedSet;
 
@@ -590,8 +607,7 @@ export class HsyBot {
     let remainingDegree = degreeOfExtension;
     while (remainingDegree > 0) {
       logger.debug(`Expand another degree ${degreeOfExtension-remainingDegree}`);
-
-      // TOTEST
+      // TODO getRelatedContactSet  when there is a severe blacklist case
       let newContactSet = new Set(allContacts
         .filter(meta => relatedSet.has(meta._id))
         .flatMap(meta => Array.from(this.getRelatedContactsBySingleContactMeta(meta)))
@@ -642,23 +658,40 @@ export class HsyBot {
     return false;
   }
 
+  public maybeCreateDir(dir):boolean {
+    const fs = require('fs');
+
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir);
+      return true;
+    }
+    return false;
+  }
   /**
    *
    * @param filebox
    * @returns string of public Id from Cloudinary Image
    */
   public async uploadImage(filebox:FileBox):Promise<string> {
-    // TOTEST
-    let filename = `/tmp/file`;
+    logger.debug(`Start upload image`);
+    const TMP_IMG_DIR = `./tmp`;
+    this.maybeCreateDir(TMP_IMG_DIR);
+    let filename = `${TMP_IMG_DIR}/file`;
     // TODO warn there might be racing condition. Alternatively we can use a UUID.
     await filebox.toFile(filename, true);
-    let res = await cloudinary.v2.uploader.upload(filename, {
-      transformation: [
-        {quality:`auto:eco`, crop:`limit`, width: `1080`, height: `4000`}
-      ],
-      format: 'jpg'
+    return new Promise((resolve, reject) => {
+      cloudinary.v2.uploader.upload(filename, {
+        transformation: [
+          {quality:`auto:eco`, crop:`limit`, width: `1080`, height: `4000`}
+        ],
+        format: 'jpg'
+      }).then((res) => {
+          logger.info(`uploadImage done with cloudinary, res = ${JSON.stringify(res, null, 2)}`);
+          resolve(res.public_id); // TODO future feature we can use etag instead of public_id to downsize our cloudinary storage and avoid duplicates
+      }).catch(err => reject(err));
     });
-    return res.publicId;
+
+
   }
 
 }

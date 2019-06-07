@@ -32,10 +32,10 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
   - [X] getRelatedUsers
 
 - Room Action
-  - [X] Add to HSY Rooms #tested
-  - [X] (Safe)-kick from HSY Rooms
-  - [X] Blacklist + Extend
-  - [X] Kick
+  - [X] Add to HSY Rooms #tested #tested
+  - [X] (Safe)-kick from HSY Rooms #tested
+  - [X] Blacklist + Extend #tested
+  - [X] Kick #tested
   - [X] Make Room Announcement #tested
   - [X] (maybe)Downsize #tested
   - [X] Record invitation #tested
@@ -45,11 +45,11 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 - Intention Parsing
   - [X] SeekInstruction
   - [X] JoinRoom + which room 
-  - [1] PostListing
+  - [X] PostListing
 
 - Info Extraction
-  - [1] Extract Text
-  - [1] Download Image, downsample and upload to Cloudinary, Get ID 
+  - [1] Extract Text with haoshiyou-ai
+  - [X] Download Image, downsample and upload to Cloudinary, Get ID #tested
 
 - Other
  - [2] Downsize friendships? not so soon

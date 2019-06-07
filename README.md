@@ -53,7 +53,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 
 - Other
  - [2] Downsize friendships? not so soon
- - [1] Use cronjob to post announcement
+ - [X] Use cronjob to post announcement
  - [X] Use npmjs.org/bottleneck to limit rate
  
 ### UI

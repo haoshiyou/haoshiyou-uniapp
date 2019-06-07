@@ -6,6 +6,7 @@ import {sify} from 'chinese-conv';
 import Bottleneck from "bottleneck";
 import {ContactType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
+import * as cron from "cron";
 
 const cloudinary = require('cloudinary');
 
@@ -58,6 +59,28 @@ const greetingMsg = `请问你要加哪个区域的群？
   【载歌在谷】加入群主载南与小伙伴们共同发起的 春晚和夏季歌手赛社区 "载歌在谷"的粉丝群，接收活动动态
 `;
 
+const hsyNickAnnouncement = `大家好，感谢加入好室友系列群，本群严格要求修改群昵称
+请大家把昵称改为如下格式：“招/求-地点-时间-真全名”，例如:
+“招-mtv-5/1-王小明”表示你是王小明，招租房客，房子地点在 Mountain View，时间5月1日开始。
+“求-pa-4/12-韩梅梅”表示你是韩梅梅，求租房子，房子地点在 Palo Alto，时间4月1日开始。
+“介-李雷”表示你是李雷，在群里目前没有需求，仅为了介绍朋友进群。“介”这类可以不写时间地点。
+本群中对地点常用缩写约定如下：
+  SF - San Francisco, PA - Palo Alto,
+  MTV - Mountain View,
+  SV - Sunnyvale,
+  FMNT - Fremont,
+  SJ - San Jose,
+  MPTS - Milpitas,
+  BKL - Berkeley
+  SEA - Seattle
+  KIR - Kirkland
+好室友系列租房群会自动定期清理没有修改群昵称的群友，以及最早的群友以便给新人腾位置。
+如果你被清理出去了也别担心，随时加好室友的小助手(WeChat:haoshiyou-bot)
+或者登陆我们的官网haoshiyou.org扫码入群
+好室友™（haoshiyou.org）微信群现已建立Facebook的Page和Group，欢迎点赞和在FB群内发帖
+- Page: fb.com/haoshiyou
+- Group: fb.com/groups/haoshiyou/`;
+
 const hikingRoomId = "6137295298@chatroom";
 const buyHouseRoomId = "5975139041@chatroom";
 const zgzgRoomId = "26306003878@chatroom";
@@ -66,21 +89,21 @@ const botNotifyRoomId = "27492303909@chatroom";
 const messageBrokerIsabella = `
 各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。
 好室友推荐的Real Estate Agent
-Isabella Sun (孙静茹)  
+Isabella Sun (孙静茹)
 Isabella是一名硅谷资深房地产经纪人, 全美top 1% 地产经纪。她居住美国10余年，2013年宾夕法尼亚大学取得硕士学位后来到湾区，目前就职于Coldwell Banker (科威房地产公司，美国最大的地产公司之一)，在Coldwell Banker北加州四五千个agent中，个人排名前25名。Zillow全5星好评（专业房产网站实名成交好评），并且好室友中也有不少人找Isabella买卖过房子，全部5星好评。
 联系方式：
 Isabella Sun
 Mobile: 650.933.8799
 Email: isabella.sun@cbnorcal.com
-WeChat: IsabellaSun_USA 
+WeChat: IsabellaSun_USA
 `;
 
 const messageBrokerIsabellaRefer = `
 本群有若干群友对Isabella的评价节选如下
 J群友：
-“...She is very patient with first-time home buyers like me, and knowledgable enough to answer all kinds of questions from me. Also, she gave me a lot of very useful advice on our home purchase, including design and pricing. Moreover, she was very responsive  whenever I asked her for help. Last but not least, she is really good at negotiation. She helped us get a huge discount from the seller prior to closing. Highly recommend! ” 
+“...She is very patient with first-time home buyers like me, and knowledgable enough to answer all kinds of questions from me. Also, she gave me a lot of very useful advice on our home purchase, including design and pricing. Moreover, she was very responsive  whenever I asked her for help. Last but not least, she is really good at negotiation. She helped us get a huge discount from the seller prior to closing. Highly recommend! ”
 Y群友：
-“...Isabella is very patient and quick in response throughout the process, from open house visits to closing. We are very impressed by her insights into the market and negotiation skills...” 
+“...Isabella is very patient and quick in response throughout the process, from open house visits to closing. We are very impressed by her insights into the market and negotiation skills...”
 L群友：
 “...She is professional, responsive, and very knowledgeable.  This was not our first home purchase, but even so, we found her guidance and insight to be tremendously valuable.  She also did an amazing job with negotiations --  being proactive, keeping us up to date, and  helping us purchase the home at a fantastic price... ”
 Z群友：
@@ -148,6 +171,7 @@ export class HsyBot {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     });
+    this.startJobDaily();
 
     this.wechaty = wechaty;
     this.chatRouter = new ChatRouter();
@@ -700,6 +724,34 @@ export class HsyBot {
 
   }
 
+  private hsyGroupNickNameMsgCronJobDebug: any =
+      new cron.CronJob("1/5 * * * * *", async () => {
+        logger.info("Cronjob debug: every 5 seconds");
+        for (const roomId in { "7046190982@chatroom": "测试" }) {
+          let room = this.wechaty.Room.load(roomId);
+          await room.sync();
+          await room.say(hsyNickAnnouncement);
+        }
+      }, null, true, "America/Los_Angeles");
+
+  private hsyGroupNickNameMsgCronJob =
+      new cron.CronJob("0 35 21 * * *", async () => {
+        logger.info("Deliver daily message");
+        // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
+        for (const roomId in hsyRoomsIdToNameMap) {
+          let room = this.wechaty.Room.load(roomId);
+          await room.sync();
+          await room.say(hsyNickAnnouncement);
+        }
+      }, null, true, "America/Los_Angeles");
+
+  private startJobDebug() {
+    console.log(`Start jobDebug`);
+    this.hsyGroupNickNameMsgCronJobDebug.start();
+  }
+
+  private startJobDaily() {
+    logger.info(`Start job daily`);
+    this.hsyGroupNickNameMsgCronJob.start();
+  }
 }
-
-

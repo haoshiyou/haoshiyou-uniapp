@@ -49,6 +49,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 
 - Info Extraction
   - [3] Extract Text with haoshiyou-ai
+  - [1] Record contact information
   - [X] Download Image, downsample and upload to Cloudinary, Get ID #tested
 
 - Other

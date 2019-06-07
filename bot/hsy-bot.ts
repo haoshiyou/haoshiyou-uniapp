@@ -171,7 +171,6 @@ export class HsyBot {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     });
-    // this.startJobDaily();
 
     this.wechaty = wechaty;
     this.chatRouter = new ChatRouter();
@@ -465,10 +464,12 @@ export class HsyBot {
   };
 
   public async stop(): Promise<void> {
+    this.stopJobDaily();
     return this.wechaty.stop();
   }
 
   public async start(): Promise<void> {
+    this.startJobDaily();
     return this.wechaty
       .on('scan', (qrcode: string, status) => {
         this.qrcode = qrcode;
@@ -734,24 +735,31 @@ export class HsyBot {
   //       }
   //     }, null, true, "America/Los_Angeles");
 
-  // private hsyGroupNickNameMsgCronJob =
-  //     new cron.CronJob("0 51 21 * * *", async () => {
-  //       logger.info("Deliver daily message");
-  //       // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
-  //       for (const roomId in hsyRoomsIdToNameMap) {
-  //         let room = this.wechaty.Room.load(roomId);
-  //         await room.sync();
-  //         await room.say(hsyNickAnnouncement);
-  //       }
-  //     }, null, true, "America/Los_Angeles");
+  private hsyGroupNickNameMsgCronJob;
+
   //
   // // private startJobDebug() {
   // //   console.log(`Start jobDebug`);
   // //   this.hsyGroupNickNameMsgCronJobDebug.start();
   // // }
   //
-  // private startJobDaily() {
-  //   logger.info(`Start job daily`);
-  //   this.hsyGroupNickNameMsgCronJob.start();
-  // }
+  private startJobDaily() {
+    logger.info(`Start job daily`);
+    this.hsyGroupNickNameMsgCronJob = new cron.CronJob("0 51 21 * * *", async () => {
+      logger.info("Deliver daily message");
+      // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
+      for (const roomId in hsyRoomsIdToNameMap) {
+        let room = this.wechaty.Room.load(roomId);
+        await room.sync();
+        await room.say(hsyNickAnnouncement);
+      }
+    }, null, true, "America/Los_Angeles");
+    this.hsyGroupNickNameMsgCronJob.start();
+  }
+  private stopJobDaily() {
+    // TOTEST
+    logger.info(`Stop job daily`);
+    this.hsyGroupNickNameMsgCronJob.stop();
+    this.hsyGroupNickNameMsgCronJob = null; // removed;
+  }
 }

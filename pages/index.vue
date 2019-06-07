@@ -15,16 +15,11 @@
 export default {
   components: {
   },
-  data: function() {
-    return {
-      listings: []
-    }
+
+  async asyncData({ $axios }) {
+    const listings = await $axios.$get(`/api/v1/HsyListing/list`);
+    return { listings }
   },
-  created: async function() {
-    this.listings = await this.$axios
-            .$get(`/api/v1/HsyListing/list`);
-    console.log(this.listings);
-  }
 }
 </script>
 

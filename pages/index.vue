@@ -3,17 +3,20 @@
     <div>
       <div v-for="listing in listings">
         <div>
-        <div class="row border">{{listing.content}}</div>
+          <div class="row border">{{listing.content}}</div>
         </div>
+        <HsyListing v-bind="listing"></HsyListing>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-
+import HsyListing from '~/components/HsyListing.vue'
 export default {
+
   components: {
+    HsyListing,
   },
 
   async asyncData({ $axios }) {

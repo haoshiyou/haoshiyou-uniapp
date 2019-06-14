@@ -501,6 +501,7 @@ export class HsyBot {
         logger.debug(`Route and handling message: ${message}`);
         let routeName = await this.chatRouter.process(message);
         logger.debug(`handled message ${JSON.stringify(message, null, 2)} with routeName ${routeName}`);
+        await this.updateLastKnownWxConnectionTime();
       })
       .on('friendship', async (friendship: Friendship) => {
         let botNotifyRoom = this.wechaty.Room.load(botNotifyRoomId);
@@ -553,6 +554,7 @@ export class HsyBot {
           default:
             break;
         }
+        await this.updateLastKnownWxConnectionTime();
       })
       .on('room-join', async (room: Room, inviteeList: Contact[], inviter: Contact) => {
         if (Object.keys(hsyRoomsIdToNameMap).indexOf(room.id) >= 0 /* belongs to Hsy*/) {
@@ -677,6 +679,21 @@ export class HsyBot {
     return relatedSet;
   }
 
+  private async updateLastKnownWxConnectionTime() {
+    await this.mongodb.collection(`WxMeta`)
+        .findOneAndUpdate(
+            {_id: `wxId:${this.wechaty.userSelf().id}`},
+            {
+              $set: {
+                lastKnown: new Date()
+              },
+              $setOnInsert: {
+                created: new Date(),
+              }
+            },
+            {upsert:true});
+
+  }
   private async saveKickFromRoom(room:Room, contact:Contact) {
     logger.debug(`saveKickFromRoom contact.self() =`, contact.self());
     logger.debug(`saveKickFromRoom this.isAdmin(contact.id) =`, this.isAdmin(contact.id));

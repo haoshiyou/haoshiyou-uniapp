@@ -7,6 +7,7 @@ import Bottleneck from "bottleneck";
 import {ContactType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 import * as cron from "cron";
+const qrImage = require('qr-image');
 
 const cloudinary = require('cloudinary');
 
@@ -85,6 +86,7 @@ const hikingRoomId = "6137295298@chatroom";
 const buyHouseRoomId = "5975139041@chatroom";
 const zgzgRoomId = "26306003878@chatroom";
 const botNotifyRoomId = "27492303909@chatroom";
+const hsyWaitRoomId = "27836703812@chatroom";
 
 const messageBrokerIsabella = `
 各位群友大家好，感谢 我们好室友的老群友、老朋友 Isabella 对好室友项目组的支持。她现在是购房中介(Realtor)，群里也有不少朋友用过 Isabella 的服务，评价很好。
@@ -256,6 +258,18 @@ export class HsyBot {
           await message.from().say(`请一次仅仅对一个黑名单进行操作`);
         }
       }));
+
+    this.chatRouter.register(new ChatRoute(
+        'HitMaxFriendCap',
+        async (message:Message):Promise<boolean> =>
+            /你的朋友数量已达到上限，可删除部分朋友后重新添加/.test(sify(message.text()))
+        ,
+        async (message:Message, context) => {
+          await this.limiter.schedule(async () => {
+            let botNotifyRoom = this.wechaty.Room.load(botNotifyRoomId);
+            await botNotifyRoom.say(`报告管理员：俺bot的好友人数又双叒叕 他妈 满了...`);
+          });
+        }));
 
     this.chatRouter.register(new ChatRoute(
       'AdminKick',
@@ -496,16 +510,25 @@ export class HsyBot {
           logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
         } else {
           await this.limiter.schedule(async () => {
-            await friendship.contact().say(`好的，欢迎使用好室友，万一机器人好友加满无法接受新好友，请联系群主 微信号:xinbenlv`);
+            await friendship.contact().say(`好的，欢迎使用好室友，万一机器人好友加满无法接受新好友，请扫描 这个二维码 加入等候群。如果失败，请通知管理员:xinbenlv`);
+            let hsyWaitRoom:Room = this.wechaty.Room.load(hsyWaitRoomId);
+            await hsyWaitRoom.sync();
+            let qrCodeStr = await hsyWaitRoom.qrcode();
+            logger.info(`hsyWaitRoom QRcode = `, qrCodeStr);
+            var qrCodeBuff = qrImage.image(qrCodeStr, { type: 'png' });
+            let path:string = './tmp/hsyWaitRoomQrcode.png';
+            qrCodeBuff.pipe(require('fs').createWriteStream(path));
+            await friendship.contact().say(FileBox.fromFile(path));
+            logger.info(`Done sending hsyWaitRoom QRcode`);
             await botNotifyRoom.say(`尝试接受好友...`);
             await friendship.accept();
             await botNotifyRoom.say(`接受好友成功`);
           });
 
           logger.debug(`Accepted friendship ${friendship}`);
-          await this.limiter.schedule(async () => {
-            await friendship.contact().say(greetingMsg);
-          });
+          // await this.limiter.schedule(async () => {
+          //   await friendship.contact().say(greetingMsg);
+          // });
 
           await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
             {
@@ -725,27 +748,34 @@ export class HsyBot {
 
   }
 
-  // private hsyGroupNickNameMsgCronJobDebug: any =
-  //     new cron.CronJob("1/5 * * * * *", async () => {
-  //       logger.info("Cronjob debug: every 5 seconds");
-  //       for (const roomId in { "7046190982@chatroom": "测试" }) {
-  //         let room = this.wechaty.Room.load(roomId);
-  //         await room.sync();
-  //         await room.say(hsyNickAnnouncement);
-  //       }
-  //     }, null, true, "America/Los_Angeles");
-
+  private hsyGroupNickNameMsgCronJobDebug;
   private hsyGroupNickNameMsgCronJob;
 
-  //
-  // // private startJobDebug() {
-  // //   console.log(`Start jobDebug`);
-  // //   this.hsyGroupNickNameMsgCronJobDebug.start();
-  // // }
-  //
+
+  private startJobDebug() {
+    console.log(`Start jobDebug`);
+    this.hsyGroupNickNameMsgCronJobDebug =
+        new cron.CronJob("1/5 * * * * *", async () => {
+          logger.info("Cronjob debug: every 5 seconds");
+          for (const roomId in { "7046190982@chatroom": "测试" }) {
+            let room = this.wechaty.Room.load(roomId);
+            await room.sync();
+            await room.say(hsyNickAnnouncement);
+          }
+        }, null, true, "America/Los_Angeles");
+    this.hsyGroupNickNameMsgCronJobDebug.start();
+  }
+
+  private stopJobDebug() {
+    // TOTEST
+    logger.info(`Stop job debug`);
+    if (this.hsyGroupNickNameMsgCronJobDebug) this.hsyGroupNickNameMsgCronJobDebug.stop();
+    this.hsyGroupNickNameMsgCronJobDebug = null; // removed;
+  }
+
   private startJobDaily() {
     logger.info(`Start job daily`);
-    this.hsyGroupNickNameMsgCronJob = new cron.CronJob("0 51 21 * * *", async () => {
+    this.hsyGroupNickNameMsgCronJob = new cron.CronJob("0 30 16 * * *", async () => {
       logger.info("Deliver daily message");
       // gaVisitorBot.event("haoshiyou-bot", `daily-message`).send();
       for (const roomId in hsyRoomsIdToNameMap) {
@@ -759,7 +789,7 @@ export class HsyBot {
   private stopJobDaily() {
     // TOTEST
     logger.info(`Stop job daily`);
-    this.hsyGroupNickNameMsgCronJob.stop();
+    if (this.hsyGroupNickNameMsgCronJob) this.hsyGroupNickNameMsgCronJob.stop();
     this.hsyGroupNickNameMsgCronJob = null; // removed;
   }
 }

@@ -4,9 +4,10 @@ import {ContactSelf} from "wechaty/dist/src/user";
 import {ChatRoute, ChatRouter} from "./chat-router";
 import {sify} from 'chinese-conv';
 import Bottleneck from "bottleneck";
-import {ContactType, MessageType} from "wechaty-puppet";
+import {ContactType, FriendshipType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 import * as cron from "cron";
+
 const qrImage = require('qr-image');
 
 const cloudinary = require('cloudinary');
@@ -502,46 +503,55 @@ export class HsyBot {
         logger.debug(`handled message ${JSON.stringify(message, null, 2)} with routeName ${routeName}`);
       })
       .on('friendship', async (friendship: Friendship) => {
-        logger.debug(`Received friendship ${friendship}`);
-
         let botNotifyRoom = this.wechaty.Room.load(botNotifyRoomId);
-        await botNotifyRoom.say(`收到来自${friendship.contact()}(${friendship.contact().id})的加好友请求`);
-        if (await this.isBlacklisted(friendship.contact().id)) {
-          logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
-        } else {
-          await this.limiter.schedule(async () => {
-            await friendship.contact().say(`好的，欢迎使用好室友，万一机器人好友加满无法接受新好友，请扫描 这个二维码 加入等候群。如果失败，请通知管理员:xinbenlv`);
-            let hsyWaitRoom:Room = this.wechaty.Room.load(hsyWaitRoomId);
-            await hsyWaitRoom.sync();
-            let qrCodeStr = await hsyWaitRoom.qrcode();
-            logger.info(`hsyWaitRoom QRcode = `, qrCodeStr);
-            var qrCodeBuff = qrImage.image(qrCodeStr, { type: 'png' });
-            let path:string = './tmp/hsyWaitRoomQrcode.png';
-            qrCodeBuff.pipe(require('fs').createWriteStream(path));
-            await friendship.contact().say(FileBox.fromFile(path));
-            logger.info(`Done sending hsyWaitRoom QRcode`);
-            await botNotifyRoom.say(`尝试接受好友...`);
-            await friendship.accept();
-            await botNotifyRoom.say(`接受好友成功`);
-          });
+        await botNotifyRoom.sync();
+        let hsyWaitRoom:Room = this.wechaty.Room.load(hsyWaitRoomId);
+        await hsyWaitRoom.sync();
+        switch (friendship.type()) {
+          case FriendshipType.Receive:
+            logger.debug(`Received friendship ${friendship}`);
+            await botNotifyRoom.say(`收到来自${friendship.contact()}(${friendship.contact().id})的加好友请求`);
+            if (await this.isBlacklisted(friendship.contact().id)) {
+              logger.warn(`Ignoring friendship from contact ${friendship.contact()}`);
+            } else {
+              await this.limiter.schedule(async () => {
+                await friendship.contact().say(`好的，欢迎使用好室友，万一机器人好友加满无法接受新好友，请扫描 这个二维码 加入等候群。如果失败，请通知管理员:xinbenlv`);
 
-          logger.debug(`Accepted friendship ${friendship}`);
-          // await this.limiter.schedule(async () => {
-          //   await friendship.contact().say(greetingMsg);
-          // });
+                let qrCodeStr = await hsyWaitRoom.qrcode();
+                logger.info(`hsyWaitRoom QRcode = `, qrCodeStr);
+                var qrCodeBuff = qrImage.image(qrCodeStr, { type: 'png' });
+                let path:string = './tmp/hsyWaitRoomQrcode.png';
+                qrCodeBuff.pipe(require('fs').createWriteStream(path));
+                await friendship.contact().say(FileBox.fromFile(path));
+                logger.info(`Done sending hsyWaitRoom QRcode`);
+                await botNotifyRoom.say(`尝试接受好友...`);
+                await friendship.accept();
+              });
 
-          await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
-            {
-              _id: friendship.contact().id},
-            {
-              $push: {
-                friendship: {
-                  type: `friend`,
-                  timestamp: new Date()
-                }
-              }
-            },
-            {upsert: true});
+              await this.mongodb.collection(`ContactMeta`).findOneAndUpdate(
+                  {
+                    _id: friendship.contact().id},
+                  {
+                    $push: {
+                      friendship: {
+                        type: `friend`,
+                        timestamp: new Date()
+                      }
+                    }
+                  },
+                  {upsert: true});
+            }
+            logger.debug(`Accepted friendship ${friendship}`);
+            await this.limiter.schedule(async () => {
+              // should have go under FriendshipType.Confirm but it seems not always delivered
+              await botNotifyRoom.say(`接受好友成功`);
+              await friendship.contact().say(greetingMsg);
+            });
+            break;
+          case FriendshipType.Confirm: // Fall through
+          case FriendshipType.Verify: // Fall through
+          default:
+            break;
         }
       })
       .on('room-join', async (room: Room, inviteeList: Contact[], inviter: Contact) => {

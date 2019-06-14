@@ -59,7 +59,8 @@ async function setupBot(app, mongodb) {
     logger.debug(`botRouter mount at ${botRouter.mountpath}`);
     res.send('Bot route home');
   });
-  botRouter.get('/statusz', asyncHandler(async (req, res) => {
+  botRouter.get('/statusz/:freshcap', asyncHandler(async (req, res) => {
+    let freshcap = parseInt(req.params.freshcap)
     let myId = wechaty.userSelf().id;
     let wxMetaArray = await mongodb.collection(`WxMeta`).find({_id:`wxId:${myId}`}).toArray();
     if (wxMetaArray.length == 1) {
@@ -67,7 +68,7 @@ async function setupBot(app, mongodb) {
       let now = new Date();
       let lastKnown = new Date(statusJson.lastKnown);
       statusJson[`freshness`] =  now.getTime() - lastKnown.getTime();
-      statusJson[`isFresh`] = statusJson[`freshness`] <= 300 * 1000; // 5min
+      statusJson[`isFresh`] = statusJson[`freshness`] <= freshcap; // 5min
       res.send(wxMetaArray[0]);
     } else if (wxMetaArray.length == 0) {
       res.send(`{ _id: "wxId:${myId}", status: "unknown" }`);

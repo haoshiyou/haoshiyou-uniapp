@@ -7,6 +7,7 @@ import Bottleneck from "bottleneck";
 import {ContactType, FriendshipType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 import * as cron from "cron";
+import {HsyExtractor} from "haoshiyou-ai";
 
 const qrImage = require('qr-image');
 
@@ -406,7 +407,15 @@ export class HsyBot {
         message.text().length >= 12 &&
         /招|租|加|求|房|house|apt|rent|/.test(sify(message.text().toLowerCase())),
       async (message:Message, context) => {
-
+        let rawText = message.text();
+        let title = HsyExtractor.extractTitle(rawText);
+        let price = HsyExtractor.extractPrice(rawText);
+        let fullAddr = HsyExtractor.extractFullAddr(rawText);
+        let zipcode = HsyExtractor.extractZipcode(rawText);
+        let city = HsyExtractor.extractCity(rawText);
+        let phone = HsyExtractor.extractPhone(rawText);
+        let wechat = HsyExtractor.extractWeChat(rawText);
+        let email = HsyExtractor.extractEmail(rawText);
         let now = new Date();
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
@@ -421,11 +430,18 @@ export class HsyBot {
               }
             },
             $set: {
+              title: title,
               content: message.text(),
+              price: price,
+              fullAddr: fullAddr,
+              zipcode: zipcode,
+              city: city,
+              phone: phone,
+              wechat: wechat,
+              email: email,
               updated: now,
             },
             $setOnInsert: {
-
               created: now,
               status: "active",
             }
@@ -442,6 +458,7 @@ export class HsyBot {
         let filebox = await message.toFileBox();
         let imageId = await this.uploadImage(filebox);
 
+        // TODO: avoid duplicate images
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
           {

@@ -4,12 +4,8 @@
             <div class="content">
                 <div itemprop="name" class="hsy-title">{{ listing.title || "招租" }}</div>
                 <div class="hsy-middle">
-                    <!----><!---->
-                    <span name="ios-pin-outline" role="img" class="icon icon-ios ion-ios-pin-outline"
-                          aria-label="pin outline"></span><span itemprop="geo" class="location">{{ listing.zipcode || "no location" }}</span>
-
-                    <span name="ios-time-outline" role="img" class="icon icon-ios ion-ios-time-outline"
-                          aria-label="time outline"></span><span class="lastUpdate">{{ listing.updated || "no time" }}</span>
+                    <template v-if="listing.city"><i class="fa fa-clock-o" aria-hidden="true"></i> <span itemprop="geo" class="location"> {{ listing.city }}</span></template>
+                    <i class="fa fa-map-marker" aria-hidden="true"></i> <span>{{ listing.updated | moment("from") }}</span>
                 </div>
                 <div class="hsy-price flex">
                     <!----><!---->
@@ -29,19 +25,16 @@
         </div>
     </div>
 </template>
-<script lang="ts">
-// export class HsyListingInterface {
-//   title:string;
-//   content:string;
-//   price:number;
-//   created:Date;
-//   imageIds:string[];
-//   updated:Date;
-//   zipcode:string;
-// }
-export default {
+<script>
+  import moment from 'moment';
+  export default {
   props: {
     listing: Object
+  },
+  filters: {
+    moment: function (date) {
+      return moment(date).fromNow();
+    }
   },
 }
 </script>
@@ -56,14 +49,15 @@ export default {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    line-height: 1.5em;
+    line-height: 24px;
     max-height: 3em;
-    font-size: 1em;
+    font-size: 16px;
     color: #4d4d4d;
     margin-bottom: .5em;
     word-wrap: break-word;
 }
 .hsy-middle {
+    font-size: 12px;
     color: #6c6c6c;
     line-height: .75em;
     margin-bottom: .25em;
@@ -92,5 +86,8 @@ export default {
 img {
     max-width: 100%;
     border: #e1e1e1 solid 1px;
+}
+.location {
+    margin-right: 12px;
 }
 </style>

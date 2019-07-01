@@ -137,7 +137,17 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 }
 
 ```
+###
 
+```.env
+WECHATY_PUPPET_PADPRO_TOKEN=
+MONGODB_URI=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+GOOGLE_MAP_KEY=
+AXIOS_BASE_URL=
+```
 
 ### Next Generation
   // intent framework

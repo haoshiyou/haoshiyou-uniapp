@@ -38,6 +38,9 @@ module.exports = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
+    ['nuxt-gmaps', {
+      key: process.env.GOOGLE_MAP_KEY
+    }]
   ],
   /*
   ** Axios module configuration

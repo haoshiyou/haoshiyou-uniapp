@@ -25,7 +25,7 @@ export let fullExtract = async function(rawText:string) {
   if (price === 'N/A' ) price = null;
   if (fullAddr === 'N/A' ) fullAddr = null;
   if (zipcode === 'N/A' ) zipcode = null;
-  if (city === 'N/A' ) price = null;
+  if (city === 'N/A' ) city = null;
   if (phone === 'N/A' ) phone = null;
   if (wechat === 'N/A' ) wechat = null;
   if (email === 'N/A' ) email = null;

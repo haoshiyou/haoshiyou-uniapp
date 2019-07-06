@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper" itemscope itemtype="https://schema.org/Room">
+    <div class="wrapper" itemscope itemtype="https://schema.org/Room" v-on:click="$router.push(`/listing/${listing._id}`)">
         <div class="grid-container">
             <div class="content">
                 <div itemprop="name" class="hsy-title">{{ listing.title || "招租" }}</div>
@@ -21,7 +21,7 @@
                 <img v-if="!listing.imageIds" itemprop="image" alt="" src="/img/no-photo-placeholder.jpg"
                      style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
             </div>
-            <a itemscope itemprop="identifier" href=""></a>
+            <a itemscope itemprop="identifier" :href="`/listing/${listing._id}`"></a>
         </div>
     </div>
 </template>

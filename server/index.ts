@@ -39,6 +39,28 @@ async function setupHsyApi(app, mongodb) {
     res.send(listings);
   }));
 
+  apiRouter.get('/HsyListing/:id',  asyncHandler(async (req, res) => {
+    logger.debug(`apiRouter mount at ${apiRouter.mountpath}`);
+    logger.debug(`Id = ${JSON.stringify(req.params, null, 2)}`);
+    let listing = await mongodb.collection(`HsyListing`)
+      .findOne({
+        _id: req.params.id,
+        status: "active" // if a listing is not active, we will not show them
+        }, {
+          projection: {
+            rawHistory: 0
+          }
+        }
+        );
+    if (listing) {
+      res.send(listing);
+    } else {
+      // HTTP status 404: NotFound
+      res.status(404)
+          .send(`HsyListing Id = ${req.params.id} Not found!`);
+    }
+  }));
+
   app.use(`/api/v1`, apiRouter);
 }
 async function setupBot(app, mongodb) {
@@ -98,7 +120,7 @@ async function start() {
   } else {
     await nuxt.ready();
   }
-  await setupBot(app, mongodb);
+  if (process.env.ENABLE_BOT) await setupBot(app, mongodb);
   await setupHsyApi(app, mongodb);
   // Give nuxt middleware to express
   app.use(nuxt.render);

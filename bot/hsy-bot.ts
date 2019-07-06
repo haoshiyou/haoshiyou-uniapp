@@ -7,7 +7,7 @@ import Bottleneck from "bottleneck";
 import {ContactType, FriendshipType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 import * as cron from "cron";
-import {HsyExtractor} from "haoshiyou-ai";
+import {fullExtract, ObjFromEntries} from "./ai-utils";
 
 const qrImage = require('qr-image');
 
@@ -408,15 +408,10 @@ export class HsyBot {
         /招|租|加|求|房|house|apt|rent|/.test(sify(message.text().toLowerCase())),
       async (message:Message, context) => {
         let rawText = message.text();
-        let title = HsyExtractor.extractTitle(rawText);
-        let price = HsyExtractor.extractPrice(rawText);
-        let fullAddr = HsyExtractor.extractFullAddr(rawText);
-        let zipcode = HsyExtractor.extractZipcode(rawText);
-        let city = HsyExtractor.extractCity(rawText);
-        let phone = HsyExtractor.extractPhone(rawText);
-        let wechat = HsyExtractor.extractWeChat(rawText);
-        let email = HsyExtractor.extractEmail(rawText);
+        let extracted = await fullExtract(rawText);
         let now = new Date();
+        extracted['content'] = rawText;
+        extracted['updated'] = now;
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
           {
@@ -429,18 +424,9 @@ export class HsyBot {
                 timestamp: now
               }
             },
-            $set: {
-              title: title,
-              content: message.text(),
-              price: price,
-              fullAddr: fullAddr,
-              zipcode: zipcode,
-              city: city,
-              phone: phone,
-              wechat: wechat,
-              email: email,
-              updated: now,
-            },
+            $set: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v !== null)),
+            // if some field is null, we unset them from the db.
+            $unset: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v === null)),
             $setOnInsert: {
               created: now,
               status: "active",

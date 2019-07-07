@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid d-flex">
     <div class="col-6 h-100">
-      <MapView :listings="listingsWithGeo"></MapView>
+<!--      <MapView :listings="listingsWithGeo"></MapView>-->
     </div>
     <div class="col-6 h-100">
       <div v-for="listing in listings">
@@ -13,11 +13,11 @@
 
 <script>
 import HsyListingComp from '~/components/HsyListingComp.vue';
-import MapView from '~/components/MapView.vue'
+// import MapView from '~/components/MapView.vue'
 export default {
   components: {
     HsyListingComp,
-    MapView,
+    // MapView,
   },
 
   async asyncData({ $axios }) {

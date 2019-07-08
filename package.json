@@ -26,6 +26,7 @@
     "express": "^4.16.4",
     "file-box": "^0.8.27",
     "haoshiyou-ai": "git+ssh://git@github.com/haoshiyou/haoshiyou-ai.git",
+    "jquery": "^3.4.1",
     "log4js": "^4.3.1",
     "moment": "^2.24.0",
     "mongodb": "^3.2.6",

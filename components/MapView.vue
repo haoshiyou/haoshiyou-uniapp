@@ -1,6 +1,6 @@
 <template>
   <section>
-    <GMap
+    <GMap id="hsy_mapview"
         :cluster="{options: {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}}"
         :center="{lat: listings[0].geo.lat, lng: listings[0].geo.lng}"
         :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}"

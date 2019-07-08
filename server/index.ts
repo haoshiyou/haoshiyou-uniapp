@@ -35,13 +35,18 @@ async function setupHsyApi(app, mongodb) {
   apiRouter.get('/HsyListing/list',  asyncHandler(async (req, res) => {
     logger.debug(`apiRouter mount at ${apiRouter.mountpath}`);
     let listings = await mongodb.collection(`HsyListing`)
-    .find({status: "active"}, {
-    sort: {updated: -1},
-      projection: {
-        rawHistory: 0
-      }
-    })
-    .limit(10).toArray();
+        .find({
+          status: "active"
+        }, {
+          sort: {
+            updated: -1
+          },
+          projection: {
+            rawHistory: 0
+          }
+        })
+        .limit(10)
+        .toArray();
 
     res.send(listings);
   }));

@@ -4,12 +4,12 @@
 ## Setup 
 1. `git clone <this repo>`
 2. `cd <dir> && npm install`  # install 
-3. create `.env` file with template
+3. create `.env` file with template. See npmjs.org/dotenv for reference.
 
 Ask @xinbenlv for keys.
 
 ```
-WECHATY_PUPPET_PADPRO_TOKEN=p
+WECHATY_PUPPET_PADPRO_TOKEN=
 MONGODB_URI=
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=

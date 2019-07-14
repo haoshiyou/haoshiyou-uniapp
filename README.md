@@ -1,6 +1,31 @@
 # haoshiyou-uniapp
 
 > a project for haoshiyou uniapp
+## Setup 
+1. `git clone <this repo>`
+2. `cd <dir> && npm install`  # install 
+3. create `.env` file with template
+
+Ask @xinbenlv for keys.
+
+```
+WECHATY_PUPPET_PADPRO_TOKEN=p
+MONGODB_URI=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+GOOGLE_MAP_KEY=
+AXIOS_BASE_URL=
+# ENABLE_BOT=1
+
+MAIL_USER=
+MAIL_PASS=
+MAIL_SMTP=
+
+```
+
+4. `npm run dev`
+5. open browser with `http://localhost:3000`
 
 ## Build Setup
 

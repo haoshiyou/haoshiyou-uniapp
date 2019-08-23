@@ -444,11 +444,11 @@ export class HsyBot {
         let filebox = await message.toFileBox();
         let imageId = await this.uploadImage(filebox);
 
-        // TODO: avoid duplicate images
+        // TODO: avoid duplicate images ClickUp: #1r5g96
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
           {_id: `wxId:${message.from().id}`},
           {
-            $push: {
+            $addToSet: {
               imageIds: imageId,
             },
             $set: {

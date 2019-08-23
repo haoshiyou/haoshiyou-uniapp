@@ -34,6 +34,8 @@ async function setupHsyApi(app, mongodb) {
 
   apiRouter.get('/HsyListing/list',  asyncHandler(async (req, res) => {
     logger.debug(`apiRouter mount at ${apiRouter.mountpath}`);
+    let limit = parseInt(req.query.limit) || 10;
+    let offset = parseInt(req.query.offset) || 0;
     let listings = await mongodb.collection(`HsyListing`)
         .find({
           status: "active"
@@ -45,7 +47,8 @@ async function setupHsyApi(app, mongodb) {
             rawHistory: 0
           }
         })
-        .limit(10)
+        .skip(offset)
+        .limit(limit)
         .toArray();
 
     res.send(listings);

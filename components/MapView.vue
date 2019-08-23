@@ -10,12 +10,6 @@
                   :position="{lat: listing.geo.lat, lng: listing.geo.lng}"
                   :options="{icon: listing.geo === currentLocation ? pins.selected : pins.notSelected}"
                   @click="currentLocation = listing.geo">
-        <GMapInfoWindow>
-          <code>
-            lat: {{ listing.geo.lat }},
-            lng: {{ listing.geo.lng }}
-          </code>
-        </GMapInfoWindow>
       </GMapMarker>
     </GMap>
   </section>

@@ -178,7 +178,7 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
       email: "string",
       wxAliasInGroup: "string",  // “刘德华"
       wxNameOfGroup: "string",  // “南湾西"
-      id: "type:contact.id",  // e.g. "wxId:wxid_wl56wlfbwn512"
+      _id: "type:contact.id",  // e.g. "wxId:wxid_wl56wlfbwn512"
     }
   }
 }

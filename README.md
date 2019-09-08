@@ -156,21 +156,29 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 
   // HsyListing
   HsyListing: {
-    _id: "type:contact.id", // e.g. wxId:wxid_wl56wlfbwn512
-    imageIds: "string",
-    idType: "Enum<string>", // {wxId, wxNick}
+    _id: "type:contact.id", // e.g. "wxId:wxid_wl56wlfbwn512"
+    imageIds: "Array<string>",
     content: "string",
     title: "string",
-    price: "string",
+    price: "number",
     updated: "datetime",
+    hsyGeoAreaEnum: "Enum<string>", // was hsyGroupEnum
     status: "Enum<string>", // {active, inactive, deleted}
     location: {
       address: "string",
       zipcode: "string",
       city: "string",
       state: "string",
+      country: "string", 
       lat: "number",
       lng: "number"
+    },
+    owner: {
+      phone: "string",
+      email: "string",
+      wxAliasInGroup: "string",  // “刘德华"
+      wxNameOfGroup: "string",  // “南湾西"
+      id: "type:contact.id",  // e.g. "wxId:wxid_wl56wlfbwn512"
     }
   }
 }

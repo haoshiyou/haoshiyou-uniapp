@@ -4,7 +4,7 @@
             <div class="content">
                 <div itemprop="name" class="hsy-title">{{ listing.title || "招租" }}</div>
                 <div class="hsy-middle">
-                    <template v-if="listing.city"><i class="fa fa-clock-o" aria-hidden="true"></i> <span itemprop="geo" class="location"> {{ listing.city }}</span></template>
+                    <template v-if="listing.location && listing.location.city"><i class="fa fa-clock-o" aria-hidden="true"></i> <span itemprop="geo" class="location"> {{ listing.location.city }}</span></template>
                     <i class="fa fa-map-marker" aria-hidden="true"></i> <span>{{ listing.updated | moment("from") }}</span>
                 </div>
                 <div class="hsy-price flex">

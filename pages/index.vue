@@ -67,7 +67,8 @@ export default {
   },
   computed: {
     listingsWithGeo: function() {
-      return this.listings.filter(l => l && l.geo && l.geo.lat && l.geo.lng) ;
+      return this.listings.filter(l => l && l.location && l.location.lat && l.location.lng);
+
     }
   },
   methods: {

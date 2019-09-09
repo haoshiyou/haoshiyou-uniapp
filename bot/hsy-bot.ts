@@ -7,7 +7,8 @@ import Bottleneck from "bottleneck";
 import {ContactType, FriendshipType, MessageType} from "wechaty-puppet";
 import {Db} from "mongodb";
 import * as cron from "cron";
-import {fullExtract, ObjFromEntries} from "./ai-utils";
+import {extractFromRawText, hsyGroupChatroomIdsToHsyGroupName, ObjFromEntries} from "./ai-utils";
+import {HsyGeoAreaEnum} from "../schemas/HsyListingInterface";
 
 const qrImage = require('qr-image');
 
@@ -408,12 +409,18 @@ export class HsyBot {
         /招|租|加|求|房|house|apt|rent|/.test(sify(message.text().toLowerCase())),
       async (message:Message, context) => {
         let rawText = message.text();
-        let extracted = await fullExtract(rawText);
+        let listingId = `wxId:${message.from().id}`;
+        let ownerId = listingId;
+        let extracted = await extractFromRawText(rawText);
+        // TODO(xinbenlv):consider to move these rich extracting to somewhere else.
+        let hsyGeoAreaEnum:HsyGeoAreaEnum = hsyGroupChatroomIdsToHsyGroupName[message.room().id];
+        extracted.location.hsyGeoAreaEnum  = hsyGeoAreaEnum;
+        extracted._id = listingId;
+        extracted.owner._id = ownerId;
         let now = new Date();
-        extracted['content'] = rawText;
-        extracted['updated'] = now;
+        extracted.updated = now;
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
-          {_id: `wxId:${message.from().id}`},
+          {_id: listingId},
           {
             $push: {
               rawHistory: {

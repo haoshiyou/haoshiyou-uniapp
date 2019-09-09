@@ -29,6 +29,7 @@ module.exports = {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '@/plugins/axios.js',
   ],
   /*
   ** Nuxt.js modules
@@ -41,6 +42,20 @@ module.exports = {
     '@nuxtjs/pwa',
     ['nuxt-gmaps', {
       key: process.env.GOOGLE_MAP_KEY
+    }],
+    ['@nuxtjs/google-analytics', {
+      asyncID: function (ctx) {
+        return ctx.app.$env.GA_ID;
+      }
+    }],
+    ['cookie-universal-nuxt', { alias: 'cookiez' }],
+    ['nuxt-env', {
+      keys: [
+        'HOST',
+        'PORT',
+        'GA_ID',
+        'GOOGLE_MAP_KEY'
+      ]
     }]
   ],
   /*

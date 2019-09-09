@@ -419,26 +419,29 @@ export class HsyBot {
         extracted.owner._id = ownerId;
         let now = new Date();
         extracted.updated = now;
-        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
-          {_id: listingId},
-          {
+        let updateQuery = {
             $push: {
-              rawHistory: {
-                text: message.text(),
-                fromId: message.from().id,
-                toId: message.to().id,
-                roomId: message.room().id, // assuming it's a room
-                timestamp: now
-              }
+                rawHistory: {
+                    text: message.text(),
+                    fromId: message.from().id,
+                    toId: message.to().id,
+                    roomId: message.room().id, // assuming it's a room
+                    timestamp: now
+                }
             },
             $set: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v !== null)),
-            // if some field is null, we unset them from the db.
-            $unset: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v === null)),
             $setOnInsert: {
-              created: now,
-              status: "active",
+                created: now,
+                status: "active",
             }
-          },
+        };
+
+        // if some field is null, we unset them from the db.
+        let unsetFields = ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v === null)) as [];
+        if (unsetFields.length > 0) updateQuery['$unset'] =  unsetFields;
+        await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
+          {_id: listingId},
+          updateQuery,
           {upsert:true});
       }));
     this.chatRouter.register(new ChatRoute(

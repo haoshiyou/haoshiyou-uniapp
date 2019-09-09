@@ -68,7 +68,6 @@ export default {
   computed: {
     listingsWithGeo: function() {
       return this.listings.filter(l => l && l.location && l.location.lat && l.location.lng);
-
     }
   },
   methods: {

@@ -162,7 +162,6 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
     title: "string",
     price: "number",
     updated: "datetime",
-    hsyGeoAreaEnum: "Enum<string>", // was hsyGroupEnum
     status: "Enum<string>", // {active, inactive, deleted}
     location: {
       address: "string",
@@ -171,7 +170,8 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
       state: "string",
       country: "string", 
       lat: "number",
-      lng: "number"
+      lng: "number",
+      hsyGeoAreaEnum: "Enum<string>", // was hsyGroupEnum
     },
     owner: {
       phone: "string",

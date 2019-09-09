@@ -1,4 +1,5 @@
 import {HsyExtractor} from "haoshiyou-ai";
+import {HsyListingInterface} from "../schemas/HsyListingInterface";
 
 export let ObjFromEntries = function(entries) {
   let obj = {};
@@ -14,7 +15,7 @@ export let ObjFromEntries = function(entries) {
  */
 export let fullExtract = async function(rawText:string) {
   let title = HsyExtractor.extractTitle(rawText);
-  let price = HsyExtractor.extractPrice(rawText);
+  let price = parseInt(HsyExtractor.extractPrice(rawText)) || 0;
   let fullAddr = HsyExtractor.extractFullAddr(rawText);
   let zipcode = HsyExtractor.extractZipcode(rawText);
   let city = HsyExtractor.extractCity(rawText);
@@ -22,7 +23,7 @@ export let fullExtract = async function(rawText:string) {
   let wechat = HsyExtractor.extractWeChat(rawText);
   let email = HsyExtractor.extractEmail(rawText);
   if (title === 'N/A' ) title = null;
-  if (price === 'N/A' ) price = null;
+  if (price === 0 ) price = null;
   if (fullAddr === 'N/A' ) fullAddr = null;
   if (zipcode === 'N/A' ) zipcode = null;
   if (city === 'N/A' ) city = null;
@@ -30,15 +31,20 @@ export let fullExtract = async function(rawText:string) {
   if (wechat === 'N/A' ) wechat = null;
   if (email === 'N/A' ) email = null;
   let geo = await HsyExtractor.maybeExtractGeoPoint(fullAddr, zipcode, city);
-  return {
+  let ret:HsyListingInterface = {
     title,
     price,
-    fullAddr,
-    zipcode,
-    city,
-    phone,
-    wechat,
-    email,
-    geo
-  }
+    location: {
+      zipcode,
+      city,
+      lat: geo ? geo['lat'] : undefined,
+      lng: geo ? geo['lng'] : undefined
+    },
+    owner: {
+      phone,
+      publicWeChatId: wechat,
+      email,
+    },
+  };
+  return ret;
 };

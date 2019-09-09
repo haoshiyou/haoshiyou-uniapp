@@ -408,12 +408,16 @@ export class HsyBot {
         /招|租|加|求|房|house|apt|rent|/.test(sify(message.text().toLowerCase())),
       async (message:Message, context) => {
         let rawText = message.text();
+        let listingId = `wxId:${message.from().id}`;
+        let ownerId = listingId;
         let extracted = await fullExtract(rawText);
+        extracted._id = listingId;
+        extracted.owner._id = ownerId;
         let now = new Date();
         extracted['content'] = rawText;
         extracted['updated'] = now;
         await this.mongodb.collection(`HsyListing`).findOneAndUpdate(
-          {_id: `wxId:${message.from().id}`},
+          {_id: listingId},
           {
             $push: {
               rawHistory: {

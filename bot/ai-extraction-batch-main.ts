@@ -11,10 +11,11 @@ async function main() {
   result.forEach(async (hsyListing) => {
     let _id = hsyListing._id;
     let extracted = await fullExtract(hsyListing.content);
-
+    extracted._id = _id;
+    extracted.owner._id = _id;
     console.log(`Start extract _id=${_id} ${JSON.stringify(extracted)}`);
     await mongodb.collection(`HsyListing`).findOneAndUpdate(
-        {_id: _id},
+        {_id: extracted._id},
         {
           $set: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v !== null)),
           $unset: ObjFromEntries(Object.entries(extracted).filter(([k,v]) => v === null)),

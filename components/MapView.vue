@@ -2,14 +2,14 @@
   <section>
     <GMap id="hsy_mapview"
         :cluster="{options: {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}}"
-        :center="{lat: listings[0].geo.lat, lng: listings[0].geo.lng}"
+        :center="{lat: listings[0].location.lat, lng: listings[0].location.lng}"
         :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}"
         :zoom="6">
       <GMapMarker v-for="listing of listings"
                   :key="listing.id"
-                  :position="{lat: listing.geo.lat, lng: listing.geo.lng}"
-                  :options="{icon: listing.geo === currentLocation ? pins.selected : pins.notSelected}"
-                  @click="currentLocation = listing.geo">
+                  :position="{lat: listing.location.lat, lng: listing.location.lng}"
+                  :options="{icon: (listing.location.lat === currentLocation.lat && listing.location.lng === currentLocation.lng) ? pins.selected : pins.notSelected}"
+                  @click="currentLocation = listing.location">
       </GMapMarker>
     </GMap>
   </section>

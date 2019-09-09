@@ -1,4 +1,4 @@
-import {fullExtract, ObjFromEntries} from "./ai-utils";
+import {extractFromRawText, ObjFromEntries} from "./ai-utils";
 
 require(`dotenv`).config();
 import {Db, MongoClient} from "mongodb";
@@ -10,7 +10,7 @@ async function main() {
   //console.log(`${JSON.stringify(result,null, 2)}`);
   result.forEach(async (hsyListing) => {
     let _id = hsyListing._id;
-    let extracted = await fullExtract(hsyListing.content);
+    let extracted = await extractFromRawText(hsyListing.content);
     extracted._id = _id;
     extracted.owner._id = _id;
     console.log(`Start extract _id=${_id} ${JSON.stringify(extracted)}`);

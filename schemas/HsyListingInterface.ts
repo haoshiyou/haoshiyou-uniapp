@@ -1,6 +1,6 @@
 // HsyListing
 
-enum HsyGeoAreaEnum {
+export enum HsyGeoAreaEnum {
     南湾东,
     南湾西,
     三番,
@@ -11,7 +11,7 @@ enum HsyGeoAreaEnum {
     测试,
 }
 
-enum HsyListingStatusEnum {
+export enum HsyListingStatusEnum {
   active, inactive, deleted
 }
 
@@ -41,8 +41,11 @@ export interface  HsyListingInterface {
     content?: string,
     title?: string,
     price?: number,
+    created?: Date,
     updated?: Date,
     status?: HsyListingStatusEnum,
     location?: HsyLocation,
     owner?: HsyContact,
+    rawHistory?: any,
+    rawOriginal?: any,
 }

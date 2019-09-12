@@ -27,7 +27,7 @@
           <h3 v-else > 招租 </h3>
           <p class="text-muted"> {{ listing.updated | moment("from") }} </p>
         </div>
-        <div v-if="listing.geo" class="listing-map ">
+        <div v-if="listing.location" class="listing-map ">
           <ListingMapView :listing="listing" />
         </div>
         <div v-if="listing.city" class="listing-city text-body font-weight-bold col-12">

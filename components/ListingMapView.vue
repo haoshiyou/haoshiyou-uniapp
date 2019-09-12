@@ -33,11 +33,11 @@ export default {
   data() {
     return {
       Label: {
-        text: "$" + this.listing.price.toString(),
+        text: this.listing.price ? "$" + this.listing.price.toString() : " ",
         fontFamily: "Impact, fantasy",
         fontSize: "14px",
         color: "#000000",
-        fontWeight: "800"
+        fontWeight: "700"
       },
       Icon: {
         labelOrigin: { x: 25, y: 25 },

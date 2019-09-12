@@ -1,6 +1,7 @@
 <template>
 <section>
   <div class="bg-light">
+    <ImagesModal v-if="modalShow" @close="closeModal" :listing="listing" :index="slide"/>
     <div class="col-10 mx-auto bg-white pb-5">
       <div class="listing-navbar">
         <nuxt-link to="/"><i class="fa fa-angle-left fa-3x" aria-hidden="true"></i></nuxt-link>
@@ -8,13 +9,9 @@
       <div class="listing-body">
         <div class="listing-images">
           <div v-if="listing.imageIds">
-            <b-carousel id="carousel-1" v-model="slide" controls indicators :interval="0" background="rgba(0, 0, 0, 0.2)" img-width="400" img-height="300" style="text-shadow: 1px 1px 2px #333;" @sliding-start="onSlideStart" @sliding-end="onSlideEnd">
-              <!-- <b-carousel-slide v-for="imageId in listing.imageIds" caption="First slide" img-src="`http://res.cloudinary.com/xinbenlv/image/upload/c_fill,g_north,w_400,h_400,g_center/${imageId}.jpg`"></b-carousel-slide> -->
-              <b-carousel-slide v-for="imageId in listing.imageIds" v-bind:key="imageId.id">
-                <img @click="show=true" slot="img" class="d-block img-fluid mx-auto" :src="`http://res.cloudinary.com/xinbenlv/image/upload/c_fill,g_north,g_center/${imageId}.jpg`" alt="image slot" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); height: 300px; width: 300px">
-                <b-modal v-model="show" :hide-footer=true>
-                  <img class="d-block img-fluid mx-auto" :src="`http://res.cloudinary.com/xinbenlv/image/upload/c_fill,g_north,g_center/${imageId}.jpg`" alt="img-" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
-                </b-modal>
+            <b-carousel id="carousel-1" v-model="slide" controls indicators :interval="0" background="rgba(0, 0, 0, 0.5)" img-width="400" img-height="300" style="text-shadow: 1px 1px 2px #333;" @sliding-start="onSlideStart" @sliding-end="onSlideEnd">
+              <b-carousel-slide v-for="(imageId, index) in listing.imageIds " v-bind:key="imageId.id" >
+                <img @click="showModal"  slot="img" class="d-block img-fluid mx-auto" :src="`http://res.cloudinary.com/xinbenlv/image/upload/c_fill,g_north,g_center/${imageId}.jpg`" alt="image slot" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); height: 300px; width: 300px">
               </b-carousel-slide>
             </b-carousel>
           </div>
@@ -69,7 +66,8 @@
 
 </template>
 <script>
-import ListingMapView from "~/components/ListingMapView.vue";
+import ListingMapView from "@/components/ListingMapView.vue";
+import ImagesModal from "@/components/ImagesModal.vue";
 import moment from "moment";
 
 export default {
@@ -77,8 +75,12 @@ export default {
     return {
       slide: 0,
       sliding: null,
-      show: false
+      modalShow: false
     };
+  },
+  components: {
+    ListingMapView,
+    ImagesModal
   },
   methods: {
     onSlideStart(slide) {
@@ -86,10 +88,13 @@ export default {
     },
     onSlideEnd(slide) {
       this.sliding = false;
+    },
+    showModal() {
+      this.modalShow = true;
+    },
+    closeModal() {
+      this.modalShow = false;
     }
-  },
-  components: {
-    ListingMapView
   },
   filters: {
     moment: function(date) {

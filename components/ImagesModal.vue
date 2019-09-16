@@ -1,5 +1,8 @@
 <template>
-  <div class="images-modal" @click="closeModal">
+  <div class="images-modal">
+    <div class="close-button text-right fixed-top">
+      <i class="fa fa-times fa-3x fa-inverse" aria-hidden="true" @click="closeModal"></i>
+    </div>
     <div class="modal-container">
       <b-carousel id="carousel-1" v-model="slide" controls indicators :interval="0" style="text-shadow: 1px 1px 2px #333; height:100%" @sliding-start="onSlideStart" @sliding-end="onSlideEnd">
         <b-carousel-slide v-for="imageId in listing.imageIds" v-bind:key="imageId.id">
@@ -44,10 +47,14 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
+  overflow: auto;
 
   .modal-container {
-    height: 100%;
-    overflow-y: auto;
+    height: 94%;
+  }
+  .close-button {
+    height: 6%;
+    margin-right: 15px;
   }
 }
 </style>

@@ -7,11 +7,10 @@
         :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'greedy', styles: mapStyle}"
         :zoom="13">
       <GMapMarker :position="{lat: listing.location.lat, lng: listing.location.lng}"
-                  :options="{ icon: Icon, label: Label}"
-                  @click="currentLocation = listing.location">
+                  :options="{ icon: Icon, label: Label}">
         <GMapInfoWindow>
-          <code v-if="listing.location.fullAddr">
-            {{ listing.location.fullAddr }}
+          <code v-if="listing.location.address">
+            {{ listing.location.address }}
           </code>
           <code v-else-if="listing.location.zipcode">
             {{ listing.location.zipcode }}
@@ -92,7 +91,7 @@ export default {
           elementType: "labels.icon",
           stylers: [
             {
-              visibility: "off"
+              visibility: "on"
             }
           ]
         },

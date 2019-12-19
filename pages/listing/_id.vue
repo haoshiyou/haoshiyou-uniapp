@@ -4,7 +4,8 @@
     <ImagesModal v-if="modalShow" @close="closeModal" :listing="listing" :index="slide"/>
     <div class="col-9 mx-auto bg-white pb-5">
       <div class="listing-navbar">
-        <i class="fa fa-angle-left fa-3x" aria-hidden="true" @click="$router.go(-1)"></i>
+        <!-- <nuxt-link :to="{name: 'index', params: { msg }}"><i class="fa fa-angle-left fa-3x" aria-hidden="true"></i></nuxt-link> -->
+        <i class="fa fa-angle-left fa-3x" aria-hidden="true" @click="$router.back()"></i>
       </div>
       <div class="listing-body">
         <div class="listing-images">
@@ -27,7 +28,7 @@
             <span>{{ listing.updated | moment("from") }}</span>
           </div>
         </div>
-        <div v-if="listing.location.lat" class="listing-map ">
+        <div v-if="listing.location && listing.location.lat" class="listing-map ">
           <ListingMapView :listing="listing" />
         </div>
         <div v-if="listing.location && listing.location.city" class="listing-city text-body font-weight-bold col-12">
@@ -41,19 +42,19 @@
           <div>
             <i class="fa fa-cube" aria-hidden="true"></i> 
             <span class="col-1"> 电话</span> 
-            <span v-if="listing.owner.phone" class="col-1">{{ listing.owner.phone }}</span>
+            <span v-if="listing.owner && listing.owner.phone" class="col-1">{{ listing.owner.phone }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
           <div>
             <i class="fa fa-cube" aria-hidden="true"></i>
             <span class="col-1"> 邮箱</span> 
-            <span v-if="listing.owner.email" class="col-1">{{ listing.owner.email }}</span>
+            <span v-if="listing.owner && listing.owner.email" class="col-1">{{ listing.owner.email }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
           <div>
             <i class="fa fa-cube" aria-hidden="true"></i>
             <span class="col-1"> 微信</span> 
-            <span v-if="listing.owner.publicWeChatId" class="col-1">{{ listing.owner.publicWeChatId }}</span>
+            <span v-if="listing.owner && listing.owner.publicWeChatId" class="col-1">{{ listing.owner.publicWeChatId }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
 
@@ -78,12 +79,18 @@ export default {
     return {
       slide: 0,
       sliding: null,
-      modalShow: false
+      modalShow: false,
+      msg: "test"
     };
   },
   components: {
     ListingMapView,
     ImagesModal
+  },
+  head() {
+		return {
+			title: '好室友'
+		}
   },
   methods: {
     onSlideStart(slide) {
@@ -111,6 +118,7 @@ export default {
   },
   async asyncData({ params, $axios }) {
     const listing = await $axios.$get(`/api/v1/HsyListing/${params.id}`);
+    console.log(`Returned Listing = ${params.id}`);
     return { listing };
   }
 };

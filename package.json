@@ -4,6 +4,10 @@
   "description": "a project for haoshiyou uniapp",
   "author": "Zainan Victor Zhou",
   "private": true,
+  "engines": {
+    "node": "11.15.0",
+    "npm": ">=6.0.0"
+  },
   "scripts": {
     "test": "ava",
     "dev": "cross-env NODE_ENV=development nodemon server/index.ts --watch server",

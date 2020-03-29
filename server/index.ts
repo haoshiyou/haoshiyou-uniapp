@@ -135,7 +135,7 @@ async function start() {
   } else {
     await nuxt.ready();
   }
-  if (process.env.ENABLE_BOT) await setupBot(app, mongodb);
+  if (process.env.ENABLE_BOT === '1') await setupBot(app, mongodb);
   await setupHsyApi(app, mongodb);
   // Give nuxt middleware to express
   app.use(nuxt.render);

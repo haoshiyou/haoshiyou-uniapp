@@ -3,6 +3,7 @@ import {HsyBot} from "../bot/hsy-bot";
 import {PuppetPadpro} from "wechaty-puppet-padpro";
 import {Wechaty} from "wechaty";
 import {Db, MongoClient} from "mongodb";
+import { async } from "q";
 
 const express = require('express');
 const consola = require('consola');
@@ -36,7 +37,26 @@ async function setupHsyApi(app, mongodb) {
     logger.debug(`apiRouter mount at ${apiRouter.mountpath}`);
     let limit = parseInt(req.query.limit) || 10;
     let offset = parseInt(req.query.offset) || 0;
-    let listings = await mongodb.collection(`HsyListing`)
+    let listings = {};
+    if(req.query.areaEnum != ''){
+      listings = await mongodb.collection(`HsyListing`)
+      .find({
+        "location.hsyGeoAreaEnum": req.query.areaEnum,
+        status: "active"
+      }, {
+        sort: {
+          updated: -1
+        },
+        projection: {
+          rawHistory: 0
+        }
+      })
+      .skip(offset)
+      .limit(limit)
+      .toArray();
+    }
+    else{
+      listings = await mongodb.collection(`HsyListing`)
         .find({
           status: "active"
         }, {
@@ -50,7 +70,7 @@ async function setupHsyApi(app, mongodb) {
         .skip(offset)
         .limit(limit)
         .toArray();
-
+    }
     res.send(listings);
   }));
 

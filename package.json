@@ -4,12 +4,16 @@
   "description": "a project for haoshiyou uniapp",
   "author": "Zainan Victor Zhou",
   "private": true,
+  "engines": {
+    "node": "11.15.0",
+    "npm": ">=6.0.0"
+  },
   "scripts": {
     "test": "ava",
     "dev": "cross-env NODE_ENV=development nodemon server/index.ts --watch server",
     "bot": "npx ts-node bot/main.ts",
     "build": "nuxt build",
-    "start": "cross-env NODE_ENV=production ts-node server/index.ts",
+    "start": "cross-env NODE_ENV=production npx ts-node server/index.ts",
     "generate": "nuxt generate"
   },
   "dependencies": {
@@ -27,20 +31,22 @@
     "dotenv": "^8.0.0",
     "express": "^4.16.4",
     "file-box": "^0.8.27",
-    "haoshiyou-ai": "git+ssh://git@github.com/haoshiyou/haoshiyou-ai.git",
+    "haoshiyou-ai": "github:haoshiyou/haoshiyou-ai",
     "jquery": "^3.4.1",
     "log4js": "^4.3.1",
     "moment": "^2.24.0",
     "mongodb": "^3.2.6",
+    "node-sass": "^4.12.0",
     "nuxt": "^2.4.0",
     "nuxt-env": "^0.1.0",
     "nuxt-gmaps": "^1.0.2",
     "qrcode-terminal": "^0.12.0",
     "wechat": "^2.1.0",
     "wechaty": "^0.26.1",
-    "wechaty-puppet-padpro": "^0.2.1"
-  },
-  "devDependencies": {
+    "wechaty-puppet-padpro": "^0.2.1",
+    "ts-node": "^8.5.4",
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.7.4",
     "@nuxt/typescript": "^2.8.1",
     "@types/mongodb": "^3.1.28",
     "@types/node": "^12.0.4",
@@ -51,8 +57,9 @@
     "require-extension-hooks": "^0.3.3",
     "require-extension-hooks-babel": "^0.1.1",
     "require-extension-hooks-vue": "^2.0.0",
-    "ts-node": "^8.2.0",
-    "tsc": "^1.20150623.0",
-    "typescript": "^3.5.1"
+    "sass-loader": "^8.0.0",
+    "webpack": "^4.39.3"
+  },
+  "devDependencies": {
   }
 }

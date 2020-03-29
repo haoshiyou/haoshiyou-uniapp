@@ -1,6 +1,6 @@
 <template>
   <section>
-    <GMap id="hsy_mapview"
+    <GMap id="hsy_mapview" ref="hsyGmap"
         :cluster="{options: {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}}"
         :center="{lat: listings[0].location.lat, lng: listings[0].location.lng}"
         :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}"
@@ -20,6 +20,14 @@
 export default {
   props: {
     listings: Array
+  },
+  watch: {
+    // A point fix: the GMapMarker changed but the markers on gmap is not re-rendered.
+    // TODO:(xinbenlv) remove when resolved [the issue](https://gitlab.com/broj42/nuxt-gmaps/-/issues/8)
+    listings: function (newListings, oldListings) {
+      // forced calling the initMarkers
+      this.$refs.hsyGmap.initMarkers();
+    }
   },
   data() {
     return {

@@ -39,7 +39,7 @@
     "node-sass": "^4.12.0",
     "nuxt": "^2.4.0",
     "nuxt-env": "^0.1.0",
-    "nuxt-gmaps": "^1.0.2",
+    "nuxt-gmaps": "1.1.8",
     "qrcode-terminal": "^0.12.0",
     "wechat": "^2.1.0",
     "wechaty": "^0.26.1",
@@ -60,6 +60,5 @@
     "sass-loader": "^8.0.0",
     "webpack": "^4.39.3"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

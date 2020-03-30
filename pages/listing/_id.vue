@@ -36,24 +36,24 @@
         </div>
         <div class="listing-content col-12 mt-4">
           <h3>描述</h3>
-          <p>{{ listing.content }}</p>
+          <p v-html="contentHtml"></p>
           <hr class="my-4">
           <h3>联系房东</h3>
           <div>
-            <i class="fa fa-cube" aria-hidden="true"></i> 
-            <span class="col-1"> 电话</span> 
+            <i class="fa fa-cube" aria-hidden="true"></i>
+            <span class="col-1"> 电话</span>
             <span v-if="listing.owner && listing.owner.phone" class="col-1">{{ listing.owner.phone }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
           <div>
             <i class="fa fa-cube" aria-hidden="true"></i>
-            <span class="col-1"> 邮箱</span> 
+            <span class="col-1"> 邮箱</span>
             <span v-if="listing.owner && listing.owner.email" class="col-1">{{ listing.owner.email }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
           <div>
             <i class="fa fa-cube" aria-hidden="true"></i>
-            <span class="col-1"> 微信</span> 
+            <span class="col-1"> 微信</span>
             <span v-if="listing.owner && listing.owner.publicWeChatId" class="col-1">{{ listing.owner.publicWeChatId }}</span>
             <span v-else class="col-1">N/A</span>
           </div>
@@ -106,6 +106,11 @@ export default {
       this.modalShow = false;
     }
   },
+  computed: {
+    contentHtml: function () {
+      return this.listing.content.split('\n').join('<br/>');
+    }
+  },
   filters: {
     moment: function(date) {
       return moment(date).fromNow();
@@ -137,4 +142,5 @@ export default {
 .listing-price {
   height: 50px;
 }
+
 </style>

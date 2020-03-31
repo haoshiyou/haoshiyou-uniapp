@@ -15,6 +15,7 @@
       <button v-if="window.width < 750" type="button" class="btn btn-secondary" @click="showMap()">
         <i class="fa fa-map-o" aria-hidden="true"></i>
       </button>
+      <button @click="searchWithinMap()">Search</button>
     </div>
     <div class="container-fluid d-flex p-0">
       <div v-if="window.width >= 750 || show == 1" class="p-0 w-100 h-100">
@@ -85,18 +86,18 @@ export default {
       margin: 20,
       limit: 10,
       areaEnum: '',
-      show: -1
+      show: -1,
+      latLngBounds: {}
     };
   },
   async asyncData({ $axios }) {
     const limit = 10;
     const areaEnum = '';
+    const latLngBounds = {};
     //const listings = await $axios.$get(
     //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
     const listings = await $axios.$get(
-      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(
-        areaEnum
-      )}`
+      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(latLngBounds)}`
     );
     return { listings, limit };
   },
@@ -111,28 +112,47 @@ export default {
     async asyncData({ $axios }) {
       const limit = 10;
       const areaEnum = '';
+      const latLngBounds = {};
       //const listings = await $axios.$get(
       //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
       const listings = await $axios.$get(
         `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(
           areaEnum
-        )}`
+        )}&latLngBounds=${JSON.stringify(latLngBounds)}`
       );
       return { listings, limit };
     },
     loadMoreListing: async function() {
       let newListings = await this.$axios.$get(
-        `/api/v1/HsyListing/list?offset=${this.listings.length}&$limit=${this.limit}&areaEnum=${this.areaEnum}`
+        `/api/v1/HsyListing/list?offset=${this.listings.length}&$limit=${this.limit}&areaEnum=${this.areaEnum}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
       );
       this.listings = this.listings.concat(newListings);
     },
     getfitter: async function(areaEnum) {
       const limit = 10;
       this.areaEnum = areaEnum;
+      this.latLngBounds = {};
       this.listings = await this.$axios.$get(
-        `/api/v1/HsyListing/list?offset=0&$limit=${
-          this.limit
-        }&areaEnum=${encodeURI(areaEnum)}`
+        `/api/v1/HsyListing/list?offset=0&$limit=${this.limit}&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
+      );
+    },
+    searchWithinMap: async function(){
+      const areaEnum = '';
+      const latLngBounds= {
+        sw:{
+          lat: 37.218892,
+          lng: -121.984163
+        },
+        ne:{
+          lat: 37.593701,
+          lng: -121.593189
+        }
+      }
+      this.latLngBounds = latLngBounds
+      //const listings = await $axios.$get(
+      //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
+      this.listings = await this.$axios.$get(
+        `/api/v1/HsyListing/list?offset=0&limit=20&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
       );
     },
     mapResize(event) {

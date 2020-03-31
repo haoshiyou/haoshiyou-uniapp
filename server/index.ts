@@ -38,6 +38,9 @@ async function setupHsyApi(app, mongodb) {
     let limit = parseInt(req.query.limit) || 10;
     let offset = parseInt(req.query.offset) || 0;
     let listings = {};
+    // let test = JSON.parse(req.query.latLngBounds);
+    // console.log(`latLngBounds = ${JSON.parse(req.query.latLngBounds)}`)
+    
     if(req.query.areaEnum != ''){
       listings = await mongodb.collection(`HsyListing`)
       .find({
@@ -54,6 +57,26 @@ async function setupHsyApi(app, mongodb) {
       .skip(offset)
       .limit(limit)
       .toArray();
+    }
+    else if(req.query.latLngBounds != '{}'){
+      listings = await mongodb.collection(`HsyListing`)
+        .find({
+          "$and": [ { "location.lat": { $gt: JSON.parse(req.query.latLngBounds).sw.lat } }, 
+                    { "location.lat": { $lt: JSON.parse(req.query.latLngBounds).ne.lat } },
+                    { "location.lng": { $gt: JSON.parse(req.query.latLngBounds).sw.lng } }, 
+                    { "location.lng": { $lt: JSON.parse(req.query.latLngBounds).ne.lng } } ],
+          status: "active"
+        }, {
+          sort: {
+            updated: -1
+          },
+          projection: {
+            rawHistory: 0
+          }
+        })
+        .skip(offset)
+        .limit(limit)
+        .toArray();
     }
     else{
       listings = await mongodb.collection(`HsyListing`)

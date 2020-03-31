@@ -3,14 +3,13 @@
     <GMap id="hsy_mapview" ref="hsyGmap"
         :cluster="{options: {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}}"
         :center="{lat: listings[0].location.lat, lng: listings[0].location.lng}"
-        :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}"
-        :zoom='8'>
+        :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}">
       <GMapMarker v-for="listing of listings"
                   :key="listing.id"
                   :position="{lat: listing.location.lat, lng: listing.location.lng}"
                   :options="{icon: (listing.location.lat === currentLocation.lat && listing.location.lng === currentLocation.lng) ? pins.selected : pins.selected,
                             label:{text: listing.price ? `$`+listing.price.toString() : ` `,fontWeight: `700`}}"
-                  @click="$router.push(`/listing/${listing._id}`)">
+                  @click="popup(listing._id)">
       </GMapMarker>
     </GMap>
   </section>
@@ -27,6 +26,12 @@ export default {
     listings: function (newListings, oldListings) {
       // forced calling the initMarkers
       this.$refs.hsyGmap.initMarkers();
+    }
+  },
+  methods: {
+    popup(id) {
+      let route = this.$router.resolve(`/listing/${id}`)
+      window.open(route.href, '_blank')
     }
   },
   data() {

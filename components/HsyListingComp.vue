@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper" itemscope itemtype="https://schema.org/Room" v-on:click="$router.push(`/listing/${listing._id}`)">
+    <div class="wrapper" itemscope itemtype="https://schema.org/Room" v-on:click="popup()">
         <div class="grid-container">
             <div class="content">
                 <div itemprop="name" class="hsy-title">{{ listing.title || "招租" }}</div>
@@ -36,6 +36,12 @@
       return moment(date).fromNow();
     }
   },
+  methods: {
+    popup() {
+      let route = this.$router.resolve(`/listing/${this.listing._id}`)
+      window.open(route.href, '_blank')
+    }
+  }
 }
 </script>
 <style>

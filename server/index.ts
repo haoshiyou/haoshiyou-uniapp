@@ -61,10 +61,10 @@ async function setupHsyApi(app, mongodb) {
     else if(req.query.latLngBounds != '{}'){
       listings = await mongodb.collection(`HsyListing`)
         .find({
-          "$and": [ { "location.lat": { $gt: JSON.parse(req.query.latLngBounds).sw.lat } }, 
-                    { "location.lat": { $lt: JSON.parse(req.query.latLngBounds).ne.lat } },
-                    { "location.lng": { $gt: JSON.parse(req.query.latLngBounds).sw.lng } }, 
-                    { "location.lng": { $lt: JSON.parse(req.query.latLngBounds).ne.lng } } ],
+          "$and": [ { "location.lat": { $gt: JSON.parse(req.query.latLngBounds).south} }, 
+                    { "location.lat": { $lt: JSON.parse(req.query.latLngBounds).north } },
+                    { "location.lng": { $gt: JSON.parse(req.query.latLngBounds).west} }, 
+                    { "location.lng": { $lt: JSON.parse(req.query.latLngBounds).east } }],
           status: "active"
         }, {
           sort: {

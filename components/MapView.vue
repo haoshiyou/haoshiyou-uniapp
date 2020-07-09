@@ -1,9 +1,16 @@
 <template>
   <section>
-    <GMap id="hsy_mapview" ref="hsyGmap"
+    <div class="d-flex justify-content-center">
+      <button class="btn btn-light" @click="getMapBounds" v-if="centerChanged == true" style="margin-top: 20px; z-index: 1; position: fixed">
+        Search in this area
+      </button>
+    </div>
+    <GMap id="hsy_mapview" ref="hsyGmap" 
         :cluster="{options: {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}}"
         :center="{lat: listings[0].location.lat, lng: listings[0].location.lng}"
-        :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}">
+        :options="{fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true, gestureHandling: 'cooperative', styles: mapStyle}"
+        @center_changed="getMapCenter">
+        
       <GMapMarker v-for="listing of listings"
                   :key="listing.id"
                   :position="{lat: listing.location.lat, lng: listing.location.lng}"
@@ -12,6 +19,7 @@
                   @click="popup(listing._id)">
       </GMapMarker>
     </GMap>
+    
   </section>
 </template>
 
@@ -23,19 +31,34 @@ export default {
   watch: {
     // A point fix: the GMapMarker changed but the markers on gmap is not re-rendered.
     // TODO:(xinbenlv) remove when resolved [the issue](https://gitlab.com/broj42/nuxt-gmaps/-/issues/8)
-    listings: function (newListings, oldListings) {
+    listings: function(newListings, oldListings) {
       // forced calling the initMarkers
-      this.$refs.hsyGmap.initMarkers();
+      this.$refs.hsyGmap.initMarkers()
     }
+  },
+  updated() {
+    this.$nextTick(() => {
+      this.$refs.hsyGmap.initMarkers()
+    })
   },
   methods: {
     popup(id) {
       let route = this.$router.resolve(`/listing/${id}`)
       window.open(route.href, '_blank')
+    },
+    getMapBounds() {
+      this.$emit('getMapBounds', this.$refs.hsyGmap.map.getBounds())
+    },
+    getMapCenter() {
+      this.centerChanged = true
     }
+  },
+  mounted() {
+    // this.mapCenter = this.$refs.hsyGmap.map.getCenter().toJSON();
   },
   data() {
     return {
+      centerChanged: false,
       pins: {
         selected:
           'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAApVBMVEUAAAD/AAD/AADxHCvyGyjzGDHoFy7vGSnwHi3wHSzsGi3uGivuHivrGyvsHCztGyrtHSzuHCvuHSzsHSzsHSvtHCvtHCrtGyvsHCvsHCvtHSztHCvtHCvtHCvuGyvtHCvtHSztGyvtHSvtHCvtHCztHCvsHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCvtHCv///8Zo6fZAAAANXRSTlMAAQISExUWHyIjKDs8QVJVV1ppe3x+f4KHiJiZmpuxt7vDxMbHys7R4Ont7u/w8fLz9Pb7/qzXrqoAAAABYktHRDZHv4jRAAAAn0lEQVQYGaXBV5KCQABF0eeooxjGnDFnpc13/1uzi7JoQL/Gc/R/v931fr/u5JXSuBK61JVQe/Dy+FNM/kQkyMnpYRnfN1hdOVsgKEqeATZyzsBI1hg4yTkCQ1kj4CBnBQRFyTPAUs4Ay/i+werLKRFTUsyCyFxxFSJlJcx4mSnJuxG6FpTSJtRS2s8Ua5LRm+wOdll9UL3fq/qo2dQ3nvcVIgrnmsRBAAAAAElFTkSuQmCC',
@@ -185,9 +208,9 @@ export default {
         }
       ],
       currentLocation: {}
-    };
+    }
   }
-};
+}
 </script>
 <style>
 </style>

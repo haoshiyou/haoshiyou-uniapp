@@ -15,13 +15,13 @@
       <button v-if="window.width < 750" type="button" class="btn btn-secondary" @click="showMap()">
         <i class="fa fa-map-o" aria-hidden="true"></i>
       </button>
-      <button @click="searchWithinMap()">Search</button>
     </div>
-    <div class="container-fluid d-flex p-0">
-      <div v-if="window.width >= 750 || show == 1" class="p-0 w-100 h-100">
-        <MapView :listings="listingsWithGeo"></MapView>
+    <div id="container1" class="container-fluid d-flex p-0">
+      <!-- <div v-if="window.width >= 750 || show == 1" class="p-0 w-100 h-100"> -->
+      <div class="p-0 w-100 h-100" >
+        <MapView :listings="listingsWithGeo" @getMapBounds="searchWithinMap"></MapView>
       </div>
-      <div v-if="show == -1" class="p-0 w-100">
+      <div class="p-0 w-100">
         <div id="listing_container" class="container-fluid " style="height: calc(100vh - 50px); overflow: scroll;">
             <template v-for="listing in listings">
               <HsyListingComp v-bind:listing="listing"></HsyListingComp>
@@ -34,14 +34,31 @@
         </div>
       </div>
     </div>
+    <!-- div id="container2" class="p-0" style="display: none">
+      <div class="p-0" v-if="show == 1" >
+        <MapView :listings="listingsWithGeo" @getMapBounds="searchWithinMap"></MapView>
+      </div>
+      <div class="p-0 w-100">
+        <div id="listing_container" style="height: 80vh; overflow: scroll;">
+            <template v-for="listing in listings">
+              <HsyListingComp v-bind:listing="listing"></HsyListingComp>
+            </template>
+            <div class="mx-auto w-100 spinner-container">
+                <div id="loading_indicator"  class="spinner-border my-2" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+      </div> -->
+    <!-- </div> -->
   </div>
   
 </template>
 
 <script>
-import HsyListingComp from '~/components/HsyListingComp.vue';
-import MapView from '~/components/MapView.vue';
-import * as $ from 'jquery';
+import HsyListingComp from '~/components/HsyListingComp.vue'
+import MapView from '~/components/MapView.vue'
+import * as $ from 'jquery'
 
 /*!
  * Determine if an element is in the viewport
@@ -50,7 +67,7 @@ import * as $ from 'jquery';
  * @return {Boolean}      Returns true if element is in the viewport
  */
 var isInViewport = function(elem) {
-  var distance = elem.getBoundingClientRect();
+  var distance = elem.getBoundingClientRect()
   return (
     distance.top >= 0 &&
     distance.left >= 0 &&
@@ -58,14 +75,14 @@ var isInViewport = function(elem) {
       (window.innerHeight || document.documentElement.clientHeight) &&
     distance.right <=
       (window.innerWidth || document.documentElement.clientWidth)
-  );
-};
+  )
+}
 
 let handleResize = function() {
   // Calculate new canvas size based on window
-  $("#hsy_mapview > .GMap__Wrapper").height(window.innerHeight - 50);
-  $("#hsy_mapview > .GMap__Wrapper").height(window.innerHeight - 50);
-};
+  $('#hsy_mapview > .GMap__Wrapper').height(window.innerHeight - 50)
+  // $("#hsy_mapview > .GMap__Wrapper").height(window.innerHeight - 50);
+}
 
 export default {
   components: {
@@ -75,12 +92,13 @@ export default {
   head() {
     return {
       title: '好室友'
-    };
+    }
   },
   data: function() {
     return {
       window: {
-        width: 750
+        width: 750,
+        height: 750
       },
 
       margin: 20,
@@ -88,108 +106,136 @@ export default {
       areaEnum: '',
       show: -1,
       latLngBounds: {}
-    };
+    }
   },
   async asyncData({ $axios }) {
-    const limit = 10;
-    const areaEnum = '';
-    const latLngBounds = {};
+    const limit = 10
+    const areaEnum = ''
+    const latLngBounds = {}
     //const listings = await $axios.$get(
     //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
     const listings = await $axios.$get(
-      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(latLngBounds)}`
-    );
-    return { listings, limit };
+      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(
+        areaEnum
+      )}&latLngBounds=${JSON.stringify(latLngBounds)}`
+    )
+    return { listings, limit }
   },
   computed: {
+    // get empty listingsWithGeo
     listingsWithGeo: function() {
       return this.listings.filter(
         l => l && l.location && l.location.lat && l.location.lng
-      );
+      )
     }
   },
   methods: {
     async asyncData({ $axios }) {
-      const limit = 10;
-      const areaEnum = '';
-      const latLngBounds = {};
+      const limit = 10
+      const areaEnum = ''
+      const latLngBounds = {}
       //const listings = await $axios.$get(
       //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
       const listings = await $axios.$get(
         `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${encodeURI(
           areaEnum
         )}&latLngBounds=${JSON.stringify(latLngBounds)}`
-      );
-      return { listings, limit };
+      )
+      return { listings, limit }
     },
     loadMoreListing: async function() {
       let newListings = await this.$axios.$get(
-        `/api/v1/HsyListing/list?offset=${this.listings.length}&$limit=${this.limit}&areaEnum=${this.areaEnum}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
-      );
-      this.listings = this.listings.concat(newListings);
+        `/api/v1/HsyListing/list?offset=${this.listings.length}&$limit=${
+          this.limit
+        }&areaEnum=${this.areaEnum}&latLngBounds=${JSON.stringify(
+          this.latLngBounds
+        )}`
+      )
+      this.listings = this.listings.concat(newListings)
     },
     getfitter: async function(areaEnum) {
-      const limit = 10;
-      this.areaEnum = areaEnum;
-      this.latLngBounds = {};
+      const limit = 10
+      this.areaEnum = areaEnum
+      this.latLngBounds = {}
       this.listings = await this.$axios.$get(
-        `/api/v1/HsyListing/list?offset=0&$limit=${this.limit}&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
-      );
+        `/api/v1/HsyListing/list?offset=0&$limit=${
+          this.limit
+        }&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(
+          this.latLngBounds
+        )}`
+      )
     },
-    searchWithinMap: async function(){
-      const areaEnum = '';
-      const latLngBounds= {
-        sw:{
-          lat: 37.218892,
-          lng: -121.984163
-        },
-        ne:{
-          lat: 37.593701,
-          lng: -121.593189
-        }
-      }
+    searchWithinMap: async function(latLngBounds) {
+      const areaEnum = ''
       this.latLngBounds = latLngBounds
-      //const listings = await $axios.$get(
-      //      `/api/v1/HsyListing/list?offset=0&limit=${limit}&areaEnum=${areaEnum}`);
+
       this.listings = await this.$axios.$get(
-        `/api/v1/HsyListing/list?offset=0&limit=20&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(this.latLngBounds)}`
-      );
+        `/api/v1/HsyListing/list?offset=0&limit=${
+          this.limit
+        }&areaEnum=${encodeURI(areaEnum)}&latLngBounds=${JSON.stringify(
+          this.latLngBounds
+        )}`
+      )
     },
     mapResize(event) {
-      this.window.width = window.innerWidth;
+      this.window.width = window.innerWidth
+      this.window.height = window.innerHeight
       if (this.window.width >= 750) {
-        this.show = -1;
+        this.show = -1
+      }
+      if (this.window.width < 750) {
+        console.log(`display check`)
+        document.getElementById(`container1`).style.display = `none`
+        document.getElementById(`container2`).style.display = `inline`
+        console.log(
+          `container1 ${document.getElementById(`container1`).style.display}`
+        )
+        console.log(
+          `container2 ${document.getElementById(`container2`).style.display}`
+        )
       }
     },
     showMap() {
-      this.show *= -1;
-      handleResize();
+      this.show *= -1
+      // handleResize();
+      if (this.show == 1) {
+        document.getElementById('listing_container').style.height = `${this
+          .window.height / 3}px`
+      } else {
+        document.getElementById('listing_container').style.height = `80vh`
+      }
+      console.log(
+        `this.window.height ${
+          document.getElementById('listing_container').style.height
+        }`
+      )
     }
   },
   mounted() {
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    this.window.width = window.innerWidth;
-    window.addEventListener('resize', this.mapResize);
-    this.mapResize();
-    let dom = document.getElementById('loading_indicator');
-    console.log(`adding listener`);
+    window.addEventListener('resize', handleResize)
+    handleResize()
+    this.window.width = window.innerWidth
+    window.addEventListener('resize', this.mapResize)
+    this.mapResize()
+    // this.checkDisplay();
+    let dom = document.getElementById('loading_indicator')
+    console.log(`adding listener`)
     document.getElementById('listing_container').addEventListener(
       'scroll',
       async event => {
-        console.log(`scroll event! isInViewport(dom) = `, isInViewport(dom));
+        console.log(`scroll event! isInViewport(dom) = `, isInViewport(dom))
         if (isInViewport(dom)) {
           // console.log(`Indicator in display again!`);
-          await this.loadMoreListing();
+          await this.loadMoreListing()
         }
       },
       false
-    );
+    )
   },
   beforeDestroy() {
-    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('resize', handleResize)
   }
-};
+}
 </script>
 
 <style>
